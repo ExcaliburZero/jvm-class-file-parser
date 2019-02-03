@@ -1,0 +1,4 @@
+[[package]]
+name = "jvm-class-file-parser"
+version = "0.1.0"
+
