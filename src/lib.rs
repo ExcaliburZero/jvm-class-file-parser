@@ -5,6 +5,7 @@ mod class_file;
 mod constant_pool;
 mod field;
 mod method;
+mod parsing;
 
 pub use attribute::*;
 pub use class_file::*;
