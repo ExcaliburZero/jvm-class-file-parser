@@ -117,7 +117,7 @@ fn read_constant_pool_entry(file: &mut File) -> io::Result<Box<ConstantPoolEntry
     Ok(entry)
 }
 
-fn read_constant_utf8(file: &mut File) -> io::Result<ConstantUtf8> {
+fn read_constant_utf8(file: &mut File) -> io::Result<ConstantPoolEntry> {
     let length = read_u16(file)?;
 
     let bytes = read_n_bytes(file, length as usize)?;
@@ -125,34 +125,34 @@ fn read_constant_utf8(file: &mut File) -> io::Result<ConstantUtf8> {
     let string = str::from_utf8(&bytes).unwrap()
         .to_string();
 
-    Ok(ConstantUtf8 {
+    Ok(ConstantPoolEntry::ConstantUtf8 {
         string,
     })
 }
 
-fn read_constant_class(file: &mut File) -> io::Result<ConstantClass> {
+fn read_constant_class(file: &mut File) -> io::Result<ConstantPoolEntry> {
     let name_index = read_u16(file)?;
 
-    Ok(ConstantClass {
+    Ok(ConstantPoolEntry::ConstantClass {
         name_index,
     })
 }
 
-fn read_constant_methodref(file: &mut File) -> io::Result<ConstantMethodref> {
+fn read_constant_methodref(file: &mut File) -> io::Result<ConstantPoolEntry> {
     let class_index = read_u16(file)?;
     let name_and_type_index = read_u16(file)?;
 
-    Ok(ConstantMethodref {
+    Ok(ConstantPoolEntry::ConstantMethodref {
         class_index,
         name_and_type_index,
     })
 }
 
-fn read_constant_name_and_type(file: &mut File) -> io::Result<ConstantNameAndType> {
+fn read_constant_name_and_type(file: &mut File) -> io::Result<ConstantPoolEntry> {
     let name_index = read_u16(file)?;
     let descriptor_index = read_u16(file)?;
 
-    Ok(ConstantNameAndType {
+    Ok(ConstantPoolEntry::ConstantNameAndType {
         name_index,
         descriptor_index,
     })
