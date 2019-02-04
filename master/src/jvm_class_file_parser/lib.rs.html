@@ -14,8 +14,34 @@
 <span id="14">14</span>
 <span id="15">15</span>
 <span id="16">16</span>
+<span id="17">17</span>
+<span id="18">18</span>
+<span id="19">19</span>
+<span id="20">20</span>
+<span id="21">21</span>
+<span id="22">22</span>
+<span id="23">23</span>
+<span id="24">24</span>
+<span id="25">25</span>
+<span id="26">26</span>
+<span id="27">27</span>
+<span id="28">28</span>
+<span id="29">29</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="attribute">#![<span class="ident">feature</span>(<span class="ident">try_from</span>)]</span>
+<span class="doccomment">//! This is a (partially implemented) Rust library and program for parsing JVM class files.</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! ```</span>
+<span class="doccomment">//! extern crate jvm_class_file_parser;</span>
+<span class="doccomment">//! </span>
+<span class="doccomment">//! use std::fs::File;</span>
+<span class="doccomment">//! use jvm_class_file_parser::ClassFile;</span>
+<span class="doccomment">//! </span>
+<span class="doccomment">//! let mut file = File::open(&quot;classes/Dummy.class&quot;).unwrap();</span>
+<span class="doccomment">//! let class_file = ClassFile::from_file(&amp;mut file).unwrap();</span>
+<span class="doccomment">//! </span>
+<span class="doccomment">//! assert_eq!(&quot;Dummy&quot;, class_file.get_class_name());</span>
+<span class="doccomment">//! ```</span>
 
 <span class="kw">mod</span> <span class="ident">attribute</span>;
 <span class="kw">mod</span> <span class="ident">bytecode</span>;
