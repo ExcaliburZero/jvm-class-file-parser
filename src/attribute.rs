@@ -1,3 +1,5 @@
+use bytecode::*;
+
 const EXCEPTION_ENTRY_LENGTH: usize = 8;
 
 #[derive(Debug)]
@@ -10,7 +12,7 @@ pub struct Attribute {
 pub struct Code {
     pub max_stack: u16,
     pub max_locals: u16,
-    pub code: Vec<u8>,
+    pub code: Vec<(usize, Bytecode)>,
     pub exception_table: Vec<ExceptionTableEntry>,
 }
 // TODO: read attributes of code
@@ -26,7 +28,9 @@ impl Code {
 
         let code_start = 8;
         let code_end = code_start + code_length;
-        let code = bytes[code_start..code_end].to_vec();
+        let code_bytes = &bytes[code_start..code_end];
+
+        let code = Bytecode::from_bytes(code_bytes);
 
         let exception_table_length = u16::from_be_bytes(
             [bytes[code_end], bytes[code_end + 1]]

@@ -7,7 +7,9 @@ use std::io;
 use std::ops::Deref;
 use std::path::PathBuf;
 
-use jvm_class_file_parser::{ClassFile, ConstantPoolEntry, Method};
+use jvm_class_file_parser::{
+    Bytecode, ClassFile, ConstantPoolEntry, ExceptionTableEntry, Method
+};
 
 const CONSTURCTOR_NAME: &str = "<init>";
 
@@ -164,20 +166,40 @@ fn print_method(class_file: &ClassFile, method: &Method) {
         "TODO"
     );
 
-    println!("{:#?}", code.code);
+    print_bytecode(class_file, &code.code);
 
     if code.exception_table.len() > 0 {
-        println!("      Exception table:");
-        println!("         from    to  target type");
+        print_exception_table(class_file, &code.exception_table);
+    }
+}
 
-        for entry in code.exception_table.iter() {
-            println!(
-                "         {:5} {:5} {:5}   Class {}",
-                entry.start_pc,
-                entry.end_pc,
-                entry.handler_pc,
-                class_file.get_constant_class_str(entry.catch_type as usize),
-            );
-        }
+fn print_bytecode(class_file: &ClassFile, code: &Vec<(usize, Bytecode)>) {
+    for (i, bytecode) in code {
+        print!(
+            "        {:>3}: {:35}",
+            i,
+            bytecode.to_string()
+        );
+
+        // TODO: show constants to the side
+
+        println!();
+    }
+}
+
+fn print_exception_table(
+        class_file: &ClassFile, exception_table: &Vec<ExceptionTableEntry>
+    ) {
+    println!("      Exception table:");
+    println!("         from    to  target type");
+
+    for entry in exception_table.iter() {
+        println!(
+            "         {:5} {:5} {:5}   Class {}",
+            entry.start_pc,
+            entry.end_pc,
+            entry.handler_pc,
+            class_file.get_constant_class_str(entry.catch_type as usize),
+        );
     }
 }
