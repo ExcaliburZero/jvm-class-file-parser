@@ -115,6 +115,17 @@ impl ClassFile {
         None
     }
 
+    /// Returns a string representation of the specified Utf8 constant.
+    ///
+    /// ```
+    /// # use std::fs::File;
+    /// # use jvm_class_file_parser::ClassFile;
+    /// #
+    /// let mut file = File::open("classes/Dummy.class").unwrap();
+    /// let class_file = ClassFile::from_file(&mut file).unwrap();
+    ///
+    /// assert_eq!("<init>", class_file.get_constant_utf8(4));
+    /// ```
     pub fn get_constant_utf8(&self, index: usize) -> &str {
         use ConstantPoolEntry::*;
 
@@ -127,6 +138,17 @@ impl ClassFile {
         }
     }
 
+    /// Returns a string representation of the specified class constant.
+    ///
+    /// ```
+    /// # use std::fs::File;
+    /// # use jvm_class_file_parser::ClassFile;
+    /// #
+    /// let mut file = File::open("classes/Dummy.class").unwrap();
+    /// let class_file = ClassFile::from_file(&mut file).unwrap();
+    ///
+    /// assert_eq!("java/lang/Object", class_file.get_constant_class_str(3));
+    /// ```
     pub fn get_constant_class_str(&self, index: usize) -> &str {
         use ConstantPoolEntry::*;
 
@@ -139,6 +161,21 @@ impl ClassFile {
         }
     }
 
+    /// Returns a string representation of the specified name and type
+    /// constant.
+    ///
+    /// ```
+    /// # use std::fs::File;
+    /// # use jvm_class_file_parser::ClassFile;
+    /// #
+    /// let mut file = File::open("classes/Dummy.class").unwrap();
+    /// let class_file = ClassFile::from_file(&mut file).unwrap();
+    ///
+    /// assert_eq!(
+    ///     "\"<init>\":()V",
+    ///     class_file.get_constant_name_and_type_str(10)
+    /// );
+    /// ```
     pub fn get_constant_name_and_type_str(&self, index: usize) -> String {
         use ConstantPoolEntry::*;
 
@@ -147,7 +184,7 @@ impl ClassFile {
         if let &ConstantNameAndType { name_index, descriptor_index } =
                 constant_nat.deref() {
             format!(
-                "{}:{}",
+                "\"{}\":{}",
                 self.get_constant_utf8(name_index as usize),
                 self.get_constant_utf8(descriptor_index as usize),
             )
@@ -156,11 +193,28 @@ impl ClassFile {
         }
     }
 
-    /// Gets the specified constant from the constant pool.
+    /// Returns the specified constant from the constant pool.
     ///
     /// This method exists in order to encapsulate the fact that the constant
     /// pool indexes start at 1 rather than 0.
-    fn get_constant(&self, index: usize) -> &Box<ConstantPoolEntry> {
+    ///
+    /// ```
+    /// # use std::fs::File;
+    /// # use std::ops::Deref;
+    /// # use jvm_class_file_parser::ClassFile;
+    /// # use jvm_class_file_parser::ConstantPoolEntry::*;
+    /// #
+    /// let mut file = File::open("classes/Dummy.class").unwrap();
+    /// let class_file = ClassFile::from_file(&mut file).unwrap();
+    ///
+    /// assert_eq!(
+    ///     ConstantClass {
+    ///         name_index: 11,
+    ///     },
+    ///     *class_file.get_constant(2).deref()
+    /// );
+    /// ```
+    pub fn get_constant(&self, index: usize) -> &Box<ConstantPoolEntry> {
         &self.constant_pool[index - 1]
     }
 }
