@@ -68,7 +68,6 @@ fn parse_class_intbox() {
     let get_value = &class_file.methods[1];
     let get_value_code = get_value.get_code(&class_file);
 
-    use Bytecode::*;
     assert_eq!(
         Some(Code {
             max_stack: 1,

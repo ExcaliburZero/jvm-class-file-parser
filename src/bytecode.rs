@@ -21,6 +21,13 @@ const NEW: u8 = 187;
 const ATHROW: u8 = 191;
 const CHECKCAST: u8 = 192;
 
+/// A JVM bytecode instruction.
+///
+/// For more detailed information on the different types of bytecode
+/// instructions, see the following section of the Java Virtual Machine
+/// Specification.
+///
+/// https://docs.oracle.com/javase/specs/jvms/se11/html/jvms-6.html
 #[derive(Debug)]
 #[derive(PartialEq)]
 pub enum Bytecode {
@@ -49,6 +56,27 @@ pub enum Bytecode {
 }
 
 impl Bytecode {
+    /// Converts the given slice of bytes into the bytecode instructions that
+    /// they represent.
+    ///
+    /// ```
+    /// # use jvm_class_file_parser::Bytecode;
+    /// # use jvm_class_file_parser::Bytecode::*;
+    /// #
+    /// let bytes = vec![
+    ///     42,
+    ///     183, 0, 1,
+    ///     177,
+    /// ];
+    ///
+    /// let bytecodes = vec![
+    ///     (0, Aload_0),
+    ///     (1, Invokespecial(1)),
+    ///     (4, Return),
+    /// ];
+    ///
+    /// assert_eq!(bytecodes, Bytecode::from_bytes(&bytes));
+    /// ```
     pub fn from_bytes(bytes: &[u8]) -> Vec<(usize, Bytecode)> {
         use Bytecode::*;
 
@@ -222,6 +250,17 @@ impl Bytecode {
         bytecode
     }
 
+    /// Converts the bytecode into a String representation.
+    ///
+    /// Takes in the index of the instruction so that it can be used to display
+    /// bytecode instructions that contain an instruction offset.
+    ///
+    /// ```
+    /// # use jvm_class_file_parser::Bytecode::*;
+    /// #
+    /// assert_eq!("aconst_null", Aconst_null.to_string(2));
+    /// assert_eq!("ifeq          15", Ifeq(5).to_string(10));
+    /// ```
     pub fn to_string(&self, index: u16) -> String {
         use Bytecode::*;
 
