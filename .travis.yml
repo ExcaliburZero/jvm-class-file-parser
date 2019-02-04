@@ -16,6 +16,9 @@ addons:
     sources:
       - kalakris-cmake
 
+rust:
+  - nightly
+
 before_script:
   - export PATH=$HOME/.cargo/bin:$PATH
   - cargo +nightly install cargo-update || echo "cargo-update already installed"
