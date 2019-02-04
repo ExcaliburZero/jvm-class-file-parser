@@ -8,6 +8,12 @@ use field::*;
 use method::*;
 use parsing;
 
+/// A representation of a JVM class file.
+///
+/// For details on the format and structure of a JVM class file, see the
+/// corresponding section of the Java Virtual Machine Specification.
+///
+/// https://docs.oracle.com/javase/specs/jvms/se11/html/jvms-4.html
 #[derive(Debug)]
 pub struct ClassFile {
     pub minor_version: u16,
@@ -64,6 +70,10 @@ impl ClassFile {
         }
     }
 
+    /// Gets the specified constant from the constant pool.
+    ///
+    /// This method exists in order to encapsulate the fact that the constant
+    /// pool indexes start at 1 rather than 0.
     fn get_constant(&self, index: usize) -> &Box<ConstantPoolEntry> {
         &self.constant_pool[index - 1]
     }

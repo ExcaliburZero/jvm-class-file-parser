@@ -176,7 +176,7 @@ fn read_interfaces(file: &mut File) -> io::Result<Vec<u16>> {
 
     let mut interfaces = Vec::<u16>::new();
 
-    for _ in 0..(interfaces_count - 1) {
+    for _ in 0..interfaces_count {
         let entry = read_u16(file)?;
 
         interfaces.push(entry);
@@ -190,7 +190,7 @@ fn read_fields(file: &mut File) -> io::Result<Vec<Field>> {
 
     let mut fields = Vec::<Field>::new();
 
-    for _ in 0..(fields_count - 1) {
+    for _ in 0..fields_count {
         let entry = read_field(file)?;
 
         fields.push(entry);
@@ -219,7 +219,7 @@ fn read_methods(file: &mut File) -> io::Result<Vec<Method>> {
 
     let mut methods = Vec::<Method>::new();
 
-    for _ in 0..(methods_count - 1) {
+    for _ in 0..methods_count {
         let entry = read_method(file)?;
 
         methods.push(entry);
@@ -248,7 +248,7 @@ fn read_attributes(file: &mut File) -> io::Result<Vec<Attribute>> {
 
     let mut attributes = Vec::<Attribute>::new();
 
-    for _ in 0..(attributes_count - 1) {
+    for _ in 0..attributes_count {
         let entry = read_attribute(file)?;
 
         attributes.push(entry);
@@ -261,5 +261,10 @@ fn read_attribute(file: &mut File) -> io::Result<Attribute> {
     let attribute_name_index = read_u16(file)?;
     let attribute_length = read_u32(file)?;
 
-    panic!("Attribute reading not yet implemented.")
+    let info = read_n_bytes(file, attribute_length as usize)?;
+
+    Ok(Attribute {
+        attribute_name_index,
+        info,
+    })
 }
