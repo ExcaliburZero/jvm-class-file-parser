@@ -80,6 +80,8 @@
 <span id="80">80</span>
 <span id="81">81</span>
 <span id="82">82</span>
+<span id="83">83</span>
+<span id="84">84</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="ident">bytecode</span>::<span class="kw-2">*</span>;
 
@@ -92,6 +94,7 @@
 }
 
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">PartialEq</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Code</span> {
     <span class="kw">pub</span> <span class="ident">max_stack</span>: <span class="ident">u16</span>,
     <span class="kw">pub</span> <span class="ident">max_locals</span>: <span class="ident">u16</span>,
@@ -141,6 +144,7 @@
 }
 
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">PartialEq</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ExceptionTableEntry</span> {
     <span class="kw">pub</span> <span class="ident">start_pc</span>: <span class="ident">u16</span>,
     <span class="kw">pub</span> <span class="ident">end_pc</span>: <span class="ident">u16</span>,

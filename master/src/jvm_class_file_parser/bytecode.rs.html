@@ -99,6 +99,7 @@
 <span id="99"> 99</span>
 <span id="100">100</span>
 <span id="101">101</span>
+<span id="102">102</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">const</span> <span class="ident">ILOAD_1</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="number">27</span>;
 <span class="kw">const</span> <span class="ident">ALOAD_0</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="number">42</span>;
@@ -109,6 +110,7 @@
 <span class="kw">const</span> <span class="ident">INVOKESPECIAL</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="number">183</span>;
 
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">PartialEq</span>)]</span>
 <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">Bytecode</span> {
     <span class="ident">Iload_1</span>,
     <span class="ident">Aload_0</span>,
