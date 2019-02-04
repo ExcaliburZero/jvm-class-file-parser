@@ -9,6 +9,7 @@ pub struct Attribute {
 }
 
 #[derive(Debug)]
+#[derive(PartialEq)]
 pub struct Code {
     pub max_stack: u16,
     pub max_locals: u16,
@@ -58,6 +59,7 @@ impl Code {
 }
 
 #[derive(Debug)]
+#[derive(PartialEq)]
 pub struct ExceptionTableEntry {
     pub start_pc: u16,
     pub end_pc: u16,

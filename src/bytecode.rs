@@ -7,6 +7,7 @@ const PUTFIELD: u8 = 181;
 const INVOKESPECIAL: u8 = 183;
 
 #[derive(Debug)]
+#[derive(PartialEq)]
 pub enum Bytecode {
     Iload_1,
     Aload_0,
