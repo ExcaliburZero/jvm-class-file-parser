@@ -1,4 +1,4 @@
-# jvm-class-file-parser
+# jvm-class-file-parser [![Travis CI Status](https://api.travis-ci.org/ExcaliburZero/jvm-class-file-parser.svg)](https://travis-ci.org/ExcaliburZero/jvm-class-file-parser) [![Coverage Status](https://coveralls.io/repos/github/ExcaliburZero/jvm-class-file-parser/badge.svg?branch=master)](https://coveralls.io/github/ExcaliburZero/jvm-class-file-parser?branch=master) [![Library documentation](https://img.shields.io/readthedocs/pip.svg)](https://excaliburzero.github.io/jvm-class-file-parser/master/jvm_class_file_parser/index.html)
 This is a (partially implemented) Rust library and program for parsing JVM class files.
 
 ```
