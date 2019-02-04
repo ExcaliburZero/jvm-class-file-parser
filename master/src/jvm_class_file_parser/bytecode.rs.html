@@ -252,6 +252,45 @@
 <span id="252">252</span>
 <span id="253">253</span>
 <span id="254">254</span>
+<span id="255">255</span>
+<span id="256">256</span>
+<span id="257">257</span>
+<span id="258">258</span>
+<span id="259">259</span>
+<span id="260">260</span>
+<span id="261">261</span>
+<span id="262">262</span>
+<span id="263">263</span>
+<span id="264">264</span>
+<span id="265">265</span>
+<span id="266">266</span>
+<span id="267">267</span>
+<span id="268">268</span>
+<span id="269">269</span>
+<span id="270">270</span>
+<span id="271">271</span>
+<span id="272">272</span>
+<span id="273">273</span>
+<span id="274">274</span>
+<span id="275">275</span>
+<span id="276">276</span>
+<span id="277">277</span>
+<span id="278">278</span>
+<span id="279">279</span>
+<span id="280">280</span>
+<span id="281">281</span>
+<span id="282">282</span>
+<span id="283">283</span>
+<span id="284">284</span>
+<span id="285">285</span>
+<span id="286">286</span>
+<span id="287">287</span>
+<span id="288">288</span>
+<span id="289">289</span>
+<span id="290">290</span>
+<span id="291">291</span>
+<span id="292">292</span>
+<span id="293">293</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">const</span> <span class="ident">ACONST_NULL</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="number">1</span>;
 <span class="kw">const</span> <span class="ident">ICONST_0</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="number">3</span>;
@@ -276,6 +315,13 @@
 <span class="kw">const</span> <span class="ident">ATHROW</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="number">191</span>;
 <span class="kw">const</span> <span class="ident">CHECKCAST</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="number">192</span>;
 
+<span class="doccomment">/// A JVM bytecode instruction.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// For more detailed information on the different types of bytecode</span>
+<span class="doccomment">/// instructions, see the following section of the Java Virtual Machine</span>
+<span class="doccomment">/// Specification.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// https://docs.oracle.com/javase/specs/jvms/se11/html/jvms-6.html</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">PartialEq</span>)]</span>
 <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">Bytecode</span> {
@@ -304,6 +350,27 @@
 }
 
 <span class="kw">impl</span> <span class="ident">Bytecode</span> {
+    <span class="doccomment">/// Converts the given slice of bytes into the bytecode instructions that</span>
+    <span class="doccomment">/// they represent.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// ```</span>
+    <span class="doccomment">/// # use jvm_class_file_parser::Bytecode;</span>
+    <span class="doccomment">/// # use jvm_class_file_parser::Bytecode::*;</span>
+    <span class="doccomment">/// #</span>
+    <span class="doccomment">/// let bytes = vec![</span>
+    <span class="doccomment">///     42,</span>
+    <span class="doccomment">///     183, 0, 1,</span>
+    <span class="doccomment">///     177,</span>
+    <span class="doccomment">/// ];</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// let bytecodes = vec![</span>
+    <span class="doccomment">///     (0, Aload_0),</span>
+    <span class="doccomment">///     (1, Invokespecial(1)),</span>
+    <span class="doccomment">///     (4, Return),</span>
+    <span class="doccomment">/// ];</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// assert_eq!(bytecodes, Bytecode::from_bytes(&amp;bytes));</span>
+    <span class="doccomment">/// ```</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from_bytes</span>(<span class="ident">bytes</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) <span class="op">-&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">usize</span>, <span class="ident">Bytecode</span>)<span class="op">&gt;</span> {
         <span class="kw">use</span> <span class="ident">Bytecode</span>::<span class="kw-2">*</span>;
 
@@ -477,6 +544,17 @@
         <span class="ident">bytecode</span>
     }
 
+    <span class="doccomment">/// Converts the bytecode into a String representation.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// Takes in the index of the instruction so that it can be used to display</span>
+    <span class="doccomment">/// bytecode instructions that contain an instruction offset.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// ```</span>
+    <span class="doccomment">/// # use jvm_class_file_parser::Bytecode::*;</span>
+    <span class="doccomment">/// #</span>
+    <span class="doccomment">/// assert_eq!(&quot;aconst_null&quot;, Aconst_null.to_string(2));</span>
+    <span class="doccomment">/// assert_eq!(&quot;ifeq          15&quot;, Ifeq(5).to_string(10));</span>
+    <span class="doccomment">/// ```</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">to_string</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">index</span>: <span class="ident">u16</span>) <span class="op">-&gt;</span> <span class="ident">String</span> {
         <span class="kw">use</span> <span class="ident">Bytecode</span>::<span class="kw-2">*</span>;
 

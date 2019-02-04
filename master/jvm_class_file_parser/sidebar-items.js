@@ -1,1 +1,1 @@
-initSidebarItems({"enum":[["Bytecode",""],["ConstantPoolEntry",""]],"struct":[["Attribute",""],["ClassFile","A representation of a JVM class file."],["Code",""],["ExceptionTableEntry",""],["Field",""],["Method",""]]});
+initSidebarItems({"enum":[["Bytecode","A JVM bytecode instruction."],["ConstantPoolEntry",""]],"struct":[["Attribute",""],["ClassFile","A representation of a JVM class file."],["Code",""],["ExceptionTableEntry",""],["Field",""],["Method",""]]});
