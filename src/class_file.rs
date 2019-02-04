@@ -57,16 +57,16 @@ impl ClassFile {
     pub fn get_class_name(&self) -> &str {
         let class = self.get_constant(self.this_class as usize);
 
-        match class.deref() {
-            &ConstantPoolEntry::ConstantClass { name_index } => {
-                let class_name = self.get_constant(name_index as usize);
+        if let &ConstantPoolEntry::ConstantClass { name_index } = class.deref() {
+            let class_name = self.get_constant(name_index as usize);
 
-                match class_name.deref() {
-                    &ConstantPoolEntry::ConstantUtf8 { ref string } => string,
-                    _ => panic!(),
-                }
-            },
-            _ => panic!(),
+            if let &ConstantPoolEntry::ConstantUtf8 { ref string } =
+                class_name.deref() { string }
+            else {
+                panic!("The \"name_index\" pointed to by \"this_class\" did not point to a ConstantUtf8. Found: {:?}", class_name.deref())
+            }
+        } else {
+            panic!("The \"this_class\" did not point to a ConstantClass. Found: {:?}", class.deref())
         }
     }
 
@@ -89,26 +89,23 @@ impl ClassFile {
         for ref attr in self.attributes.iter() {
             let name_constant = self.get_constant(attr.attribute_name_index as usize);
 
-            match name_constant.deref() {
-                &ConstantPoolEntry::ConstantUtf8 { ref string } => {
-                    if string == "SourceFile" {
-                        if attr.info.len() != 2 {
-                            panic!("Incorrectly formatted SourceFile attribute. Expected info length of 2, found: {}", attr.info.len());
-                        }
-
-                        let info = [attr.info[0], attr.info[1]];
-                        let source_file_index = u16::from_be_bytes(info);
-                        let source_constant = self.get_constant(source_file_index as usize);
-
-                        match source_constant.deref() {
-                            &ConstantPoolEntry::ConstantUtf8 { ref string } => {
-                                return Some(string)
-                            },
-                            _ => panic!(),
-                        }
+            if let &ConstantPoolEntry::ConstantUtf8 { ref string } =
+                    name_constant.deref() {
+                if string == "SourceFile" {
+                    if attr.info.len() != 2 {
+                        panic!("Incorrectly formatted SourceFile attribute. Expected info length of 2, found: {}", attr.info.len());
                     }
-                },
-                _ => (),
+
+                    let info = [attr.info[0], attr.info[1]];
+                    let source_file_index = u16::from_be_bytes(info);
+                    let source_constant = self.get_constant(source_file_index as usize);
+
+                    if let &ConstantPoolEntry::ConstantUtf8 { ref string } =
+                        source_constant.deref() { return Some(string) }
+                    else {
+                        panic!("The \"info\" of the \"SourceFile\" annotation did not point to a ConstantUtf8. Found: {:?}", source_constant.deref());
+                    }
+                }
             }
         }
 
