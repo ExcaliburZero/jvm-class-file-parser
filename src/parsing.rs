@@ -13,6 +13,7 @@ const EXPECTED_MAGIC: u32 = 0xCAFEBABE;
 
 const CONSTANT_TAG_UTF8: u8 = 1;
 const CONSTANT_TAG_CLASS: u8 = 7;
+const CONSTANT_TAG_FIELDREF: u8 = 9;
 const CONSTANT_TAG_METHODREF: u8 = 10;
 const CONSTANT_TAG_NAME_AND_TYPE: u8 = 12;
 
@@ -107,11 +108,13 @@ fn read_constant_pool_entry(file: &mut File) -> io::Result<Box<ConstantPoolEntry
             Box::new(read_constant_utf8(file)?),
         CONSTANT_TAG_CLASS =>
             Box::new(read_constant_class(file)?),
+        CONSTANT_TAG_FIELDREF =>
+            Box::new(read_constant_fieldref(file)?),
         CONSTANT_TAG_METHODREF =>
             Box::new(read_constant_methodref(file)?),
         CONSTANT_TAG_NAME_AND_TYPE =>
             Box::new(read_constant_name_and_type(file)?),
-        _ => panic!(),
+        _ => panic!("Encountered unknown type of constant pool entry with a tag of: {}", tag),
     };
 
     Ok(entry)
@@ -135,6 +138,16 @@ fn read_constant_class(file: &mut File) -> io::Result<ConstantPoolEntry> {
 
     Ok(ConstantPoolEntry::ConstantClass {
         name_index,
+    })
+}
+
+fn read_constant_fieldref(file: &mut File) -> io::Result<ConstantPoolEntry> {
+    let class_index = read_u16(file)?;
+    let name_and_type_index = read_u16(file)?;
+
+    Ok(ConstantPoolEntry::ConstantFieldref {
+        class_index,
+        name_and_type_index,
     })
 }
 
@@ -248,5 +261,5 @@ fn read_attribute(file: &mut File) -> io::Result<Attribute> {
     let attribute_name_index = read_u16(file)?;
     let attribute_length = read_u32(file)?;
 
-    panic!()
+    panic!("Attribute reading not yet implemented.")
 }

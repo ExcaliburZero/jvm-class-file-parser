@@ -23,10 +23,31 @@ pub struct ClassFile {
 }
 
 impl ClassFile {
+    /// Parses the given class file. Fails if the given file is not a valid
+    /// class file.
+    ///
+    /// ```
+    /// # use std::fs::File;
+    /// # use jvm_class_file_parser::ClassFile;
+    /// #
+    /// let mut file = File::open("classes/Dummy.class").unwrap();
+    /// let class_file = ClassFile::from_file(&mut file).unwrap();
+    /// ```
     pub fn from_file(file: &mut File) -> io::Result<ClassFile> {
         parsing::read_class_file(file)
     }
 
+    /// Returns the name of the class file.
+    ///
+    /// ```
+    /// # use std::fs::File;
+    /// # use jvm_class_file_parser::ClassFile;
+    /// #
+    /// let mut file = File::open("classes/Dummy.class").unwrap();
+    /// let class_file = ClassFile::from_file(&mut file).unwrap();
+    ///
+    /// assert_eq!("Dummy", class_file.get_class_name());
+    /// ```
     pub fn get_class_name(&self) -> &str {
         let class = self.get_constant(self.this_class as usize);
 

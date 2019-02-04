@@ -5,7 +5,7 @@ use std::fs::File;
 use jvm_class_file_parser::ClassFile;
 
 fn main() {
-    let mut file = File::open("Test.class").unwrap();
+    let mut file = File::open("classes/Dummy.class").unwrap();
 
     let class_file = ClassFile::from_file(&mut file).unwrap();
 
