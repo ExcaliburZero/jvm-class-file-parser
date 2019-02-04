@@ -18,19 +18,19 @@ addons:
 
 before_script:
   - export PATH=$HOME/.cargo/bin:$PATH
-  - cargo install cargo-update || echo "cargo-update already installed"
-  - cargo install cargo-travis || echo "cargo-travis already installed"
-  - cargo install-update -a # update outdated cached binaries
+  - cargo +nightly install cargo-update || echo "cargo-update already installed"
+  - cargo +nightly install cargo-travis || echo "cargo-travis already installed"
+  - cargo +nightly install-update -a # update outdated cached binaries
 
 script:
   - |
-      cargo build &&
-      cargo test --all --verbose &&
-      cargo bench &&
-      cargo doc
+      cargo +nightly build &&
+      cargo +nightly test --all --verbose &&
+      cargo +nightly bench &&
+      cargo +nightly doc
 
 after_success:
 # measure code coverage and upload to coveralls.io
-  - cargo coveralls
+  - cargo +nightly coveralls
 # upload documentation to github.io (gh-pages branch)
-  - cargo doc-upload
+  - cargo +nightly doc-upload
