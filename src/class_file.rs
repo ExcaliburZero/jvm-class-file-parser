@@ -55,14 +55,16 @@ impl ClassFile {
     /// assert_eq!("Dummy", class_file.get_class_name());
     /// ```
     pub fn get_class_name(&self) -> &str {
+        use ConstantPoolEntry::*;
+
         let class = self.get_constant(self.this_class as usize);
 
-        if let &ConstantPoolEntry::ConstantClass { name_index } = class.deref() {
+        if let &ConstantClass { name_index } = class.deref() {
             let class_name = self.get_constant(name_index as usize);
 
-            if let &ConstantPoolEntry::ConstantUtf8 { ref string } =
-                class_name.deref() { string }
-            else {
+            if let &ConstantUtf8 { ref string } = class_name.deref() {
+                string
+            } else {
                 panic!("The \"name_index\" pointed to by \"this_class\" did not point to a ConstantUtf8. Found: {:?}", class_name.deref())
             }
         } else {
@@ -86,11 +88,12 @@ impl ClassFile {
     /// assert_eq!(Some("Dummy.java"), class_file.get_source_file_name());
     /// ```
     pub fn get_source_file_name(&self) -> Option<&str> {
+        use ConstantPoolEntry::*;
+
         for ref attr in self.attributes.iter() {
             let name_constant = self.get_constant(attr.attribute_name_index as usize);
 
-            if let &ConstantPoolEntry::ConstantUtf8 { ref string } =
-                    name_constant.deref() {
+            if let &ConstantUtf8 { ref string } = name_constant.deref() {
                 if string == "SourceFile" {
                     if attr.info.len() != 2 {
                         panic!("Incorrectly formatted SourceFile attribute. Expected info length of 2, found: {}", attr.info.len());
@@ -100,7 +103,7 @@ impl ClassFile {
                     let source_file_index = u16::from_be_bytes(info);
                     let source_constant = self.get_constant(source_file_index as usize);
 
-                    if let &ConstantPoolEntry::ConstantUtf8 { ref string } =
+                    if let &ConstantUtf8 { ref string } =
                         source_constant.deref() { return Some(string) }
                     else {
                         panic!("The \"info\" of the \"SourceFile\" annotation did not point to a ConstantUtf8. Found: {:?}", source_constant.deref());
@@ -110,6 +113,47 @@ impl ClassFile {
         }
 
         None
+    }
+
+    pub fn get_constant_utf8(&self, index: usize) -> &str {
+        use ConstantPoolEntry::*;
+
+        let constant_utf8 = self.get_constant(index);
+
+        if let &ConstantUtf8 { ref string } = constant_utf8.deref() {
+            string
+        } else {
+            panic!("Failed to get constant \"#{}\" as a ConstantUtf8. Found: {:?}", index, constant_utf8)
+        }
+    }
+
+    pub fn get_constant_class_str(&self, index: usize) -> &str {
+        use ConstantPoolEntry::*;
+
+        let constant_class = self.get_constant(index);
+
+        if let &ConstantClass { name_index } = constant_class.deref() {
+            self.get_constant_utf8(name_index as usize)
+        } else {
+            panic!("Failed to get constant \"#{}\" as a ConstantClass. Found: {:?}", index, constant_class)
+        }
+    }
+
+    pub fn get_constant_name_and_type_str(&self, index: usize) -> String {
+        use ConstantPoolEntry::*;
+
+        let constant_nat = self.get_constant(index);
+
+        if let &ConstantNameAndType { name_index, descriptor_index } =
+                constant_nat.deref() {
+            format!(
+                "{}:{}",
+                self.get_constant_utf8(name_index as usize),
+                self.get_constant_utf8(descriptor_index as usize),
+            )
+        } else {
+            panic!("Failed to get constant \"#{}\" as a ConstantNameAndType. Found: {:?}", index, constant_nat)
+        }
     }
 
     /// Gets the specified constant from the constant pool.
