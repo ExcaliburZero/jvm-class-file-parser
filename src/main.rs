@@ -182,7 +182,7 @@ fn print_bytecode(class_file: &ClassFile, code: &Vec<(usize, Bytecode)>) {
         print!(
             "        {:>3}: {:35}",
             i,
-            bytecode.to_string()
+            bytecode.to_string(*i as u16)
         );
 
         // TODO: show constants to the side
@@ -220,5 +220,10 @@ mod tests {
     #[test]
     fn javap_intbox_runs_without_error() {
         javap("classes/IntBox.class");
+    }
+
+    #[test]
+    fn javap_exceptionthrows_runs_without_error() {
+        javap("classes/ExceptionThrows.class");
     }
 }
