@@ -18,6 +18,10 @@ fn main() {
 
     let filepath = &args[1];
 
+    javap(filepath);
+}
+
+fn javap(filepath: &str) {
     let mut file = File::open(filepath).unwrap();
     let class_file = ClassFile::from_file(&mut file).unwrap();
 
@@ -201,5 +205,20 @@ fn print_exception_table(
             entry.handler_pc,
             class_file.get_constant_class_str(entry.catch_type as usize),
         );
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use javap;
+
+    #[test]
+    fn javap_dummy_runs_without_error() {
+        javap("classes/Dummy.class");
+    }
+
+    #[test]
+    fn javap_intbox_runs_without_error() {
+        javap("classes/IntBox.class");
     }
 }
