@@ -12,4 +12,6 @@ fn main() {
     println!("{:#?}", class_file);
 
     println!("{}", class_file.get_class_name());
+
+    println!("{}", class_file.get_source_file_name().unwrap());
 }

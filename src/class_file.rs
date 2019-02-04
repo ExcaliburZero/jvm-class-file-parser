@@ -70,6 +70,51 @@ impl ClassFile {
         }
     }
 
+    /// Returns the name of the source file that the class file was compiled
+    /// from.
+    ///
+    /// If the class file does not have a `SourceFile` attribute, then a `None`
+    /// option is returned.
+    ///
+    /// ```
+    /// # use std::fs::File;
+    /// # use jvm_class_file_parser::ClassFile;
+    /// #
+    /// let mut file = File::open("classes/Dummy.class").unwrap();
+    /// let class_file = ClassFile::from_file(&mut file).unwrap();
+    ///
+    /// assert_eq!(Some("Dummy.java"), class_file.get_source_file_name());
+    /// ```
+    pub fn get_source_file_name(&self) -> Option<&str> {
+        for ref attr in self.attributes.iter() {
+            let name_constant = self.get_constant(attr.attribute_name_index as usize);
+
+            match name_constant.deref() {
+                &ConstantPoolEntry::ConstantUtf8 { ref string } => {
+                    if string == "SourceFile" {
+                        if attr.info.len() != 2 {
+                            panic!("Incorrectly formatted SourceFile attribute. Expected info length of 2, found: {}", attr.info.len());
+                        }
+
+                        let info = [attr.info[0], attr.info[1]];
+                        let source_file_index = u16::from_be_bytes(info);
+                        let source_constant = self.get_constant(source_file_index as usize);
+
+                        match source_constant.deref() {
+                            &ConstantPoolEntry::ConstantUtf8 { ref string } => {
+                                return Some(string)
+                            },
+                            _ => panic!(),
+                        }
+                    }
+                },
+                _ => (),
+            }
+        }
+
+        None
+    }
+
     /// Gets the specified constant from the constant pool.
     ///
     /// This method exists in order to encapsulate the fact that the constant
