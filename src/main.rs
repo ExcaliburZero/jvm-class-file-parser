@@ -7,7 +7,9 @@ use std::io;
 use std::ops::Deref;
 use std::path::PathBuf;
 
-use jvm_class_file_parser::{ClassFile, ConstantPoolEntry};
+use jvm_class_file_parser::{ClassFile, ConstantPoolEntry, Method};
+
+const CONSTURCTOR_NAME: &str = "<init>";
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -33,11 +35,19 @@ fn main() {
 
     print_constant_pool(&class_file);
 
-    println!("{}\n{}", "{", "}");
+    println!("{}", "{");
+
+    for method in class_file.methods.iter() {
+        print_method(&class_file, method);
+    }
+
+    println!("{}", "}");
 
     if let Some(source_file) = source_file {
         println!("SourceFile: \"{}\"", source_file);
     }
+
+    //println!("{:#?}", class_file);
 }
 
 fn to_absolute_filepath(filepath: &str) -> io::Result<PathBuf> {
@@ -123,5 +133,51 @@ fn format_constant_pool_entry(
             )
         },
         _ => panic!(),
+    }
+}
+
+fn print_method(class_file: &ClassFile, method: &Method) {
+    let method_name = class_file.get_constant_utf8(method.name_index as usize);
+
+    println!(
+        "  {}();",
+        if method_name == CONSTURCTOR_NAME { class_file.get_class_name() }
+            else { method_name }
+    );
+
+    println!(
+        "    descriptor: {}",
+        class_file.get_constant_utf8(method.descriptor_index as usize)
+    );
+
+    println!(
+        "    flags: TODO",
+    );
+
+    let code = method.get_code(class_file).unwrap();
+
+    println!("    Code:");
+    println!(
+        "      stack={}, locals={}, args_size={}",
+        code.max_stack,
+        code.max_locals,
+        "TODO"
+    );
+
+    println!("{:#?}", code.code);
+
+    if code.exception_table.len() > 0 {
+        println!("      Exception table:");
+        println!("         from    to  target type");
+
+        for entry in code.exception_table.iter() {
+            println!(
+                "         {:5} {:5} {:5}   Class {}",
+                entry.start_pc,
+                entry.end_pc,
+                entry.handler_pc,
+                class_file.get_constant_class_str(entry.catch_type as usize),
+            );
+        }
     }
 }
