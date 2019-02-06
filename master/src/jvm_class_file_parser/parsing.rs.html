@@ -280,7 +280,7 @@
 <span class="kw">use</span> <span class="ident">field</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="ident">method</span>::<span class="kw-2">*</span>;
 
-<span class="kw">const</span> <span class="ident">EXPECTED_MAGIC</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">0xCAFEBABE</span>;
+<span class="kw">const</span> <span class="ident">EXPECTED_MAGIC</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">0xCAFE_BABE</span>;
 
 <span class="kw">const</span> <span class="ident">CONSTANT_TAG_UTF8</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="number">1</span>;
 <span class="kw">const</span> <span class="ident">CONSTANT_TAG_CLASS</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="number">7</span>;
@@ -328,7 +328,7 @@
 <span class="kw">fn</span> <span class="ident">read_u8</span>(<span class="ident">file</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">File</span>) <span class="op">-&gt;</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">buffer</span> <span class="op">=</span> [<span class="number">0</span>; <span class="number">1</span>];
 
-    <span class="ident">file</span>.<span class="ident">read</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">buffer</span>)<span class="question-mark">?</span>;
+    <span class="ident">file</span>.<span class="ident">read_exact</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">buffer</span>)<span class="question-mark">?</span>;
 
     <span class="prelude-val">Ok</span>(<span class="ident">u8</span>::<span class="ident">from_be_bytes</span>(<span class="ident">buffer</span>))
 }
@@ -336,7 +336,7 @@
 <span class="kw">fn</span> <span class="ident">read_u16</span>(<span class="ident">file</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">File</span>) <span class="op">-&gt;</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">u16</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">buffer</span> <span class="op">=</span> [<span class="number">0</span>; <span class="number">2</span>];
 
-    <span class="ident">file</span>.<span class="ident">read</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">buffer</span>)<span class="question-mark">?</span>;
+    <span class="ident">file</span>.<span class="ident">read_exact</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">buffer</span>)<span class="question-mark">?</span>;
 
     <span class="prelude-val">Ok</span>(<span class="ident">u16</span>::<span class="ident">from_be_bytes</span>(<span class="ident">buffer</span>))
 }
@@ -344,7 +344,7 @@
 <span class="kw">fn</span> <span class="ident">read_u32</span>(<span class="ident">file</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">File</span>) <span class="op">-&gt;</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">buffer</span> <span class="op">=</span> [<span class="number">0</span>; <span class="number">4</span>];
 
-    <span class="ident">file</span>.<span class="ident">read</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">buffer</span>)<span class="question-mark">?</span>;
+    <span class="ident">file</span>.<span class="ident">read_exact</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">buffer</span>)<span class="question-mark">?</span>;
 
     <span class="prelude-val">Ok</span>(<span class="ident">u32</span>::<span class="ident">from_be_bytes</span>(<span class="ident">buffer</span>))
 }
@@ -358,7 +358,7 @@
 }
 
 <span class="kw">fn</span> <span class="ident">read_constant_pool</span>(<span class="ident">file</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">File</span>) <span class="op">-&gt;</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="ident">ConstantPoolEntry</span><span class="op">&gt;&gt;</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">constant_pool_count</span> <span class="op">=</span> <span class="ident">read_u16</span>(<span class="ident">file</span>)<span class="question-mark">?</span> <span class="kw">as</span> <span class="ident">i32</span>;
+    <span class="kw">let</span> <span class="ident">constant_pool_count</span> <span class="op">=</span> <span class="ident">i32</span>::<span class="ident">from</span>(<span class="ident">read_u16</span>(<span class="ident">file</span>)<span class="question-mark">?</span>);
 
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">constant_pool</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="ident">ConstantPoolEntry</span><span class="op">&gt;&gt;</span>::<span class="ident">new</span>();
 
@@ -443,7 +443,7 @@
 }
 
 <span class="kw">fn</span> <span class="ident">read_interfaces</span>(<span class="ident">file</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">File</span>) <span class="op">-&gt;</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u16</span><span class="op">&gt;&gt;</span> {
-    <span class="kw">let</span> <span class="ident">interfaces_count</span> <span class="op">=</span> <span class="ident">read_u16</span>(<span class="ident">file</span>)<span class="question-mark">?</span> <span class="kw">as</span> <span class="ident">i32</span>;
+    <span class="kw">let</span> <span class="ident">interfaces_count</span> <span class="op">=</span> <span class="ident">i32</span>::<span class="ident">from</span>(<span class="ident">read_u16</span>(<span class="ident">file</span>)<span class="question-mark">?</span>);
 
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">interfaces</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="op">&lt;</span><span class="ident">u16</span><span class="op">&gt;</span>::<span class="ident">new</span>();
 
@@ -457,7 +457,7 @@
 }
 
 <span class="kw">fn</span> <span class="ident">read_fields</span>(<span class="ident">file</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">File</span>) <span class="op">-&gt;</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Field</span><span class="op">&gt;&gt;</span> {
-    <span class="kw">let</span> <span class="ident">fields_count</span> <span class="op">=</span> <span class="ident">read_u16</span>(<span class="ident">file</span>)<span class="question-mark">?</span> <span class="kw">as</span> <span class="ident">i32</span>;
+    <span class="kw">let</span> <span class="ident">fields_count</span> <span class="op">=</span> <span class="ident">i32</span>::<span class="ident">from</span>(<span class="ident">read_u16</span>(<span class="ident">file</span>)<span class="question-mark">?</span>);
 
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">fields</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="op">&lt;</span><span class="ident">Field</span><span class="op">&gt;</span>::<span class="ident">new</span>();
 
@@ -486,7 +486,7 @@
 }
 
 <span class="kw">fn</span> <span class="ident">read_methods</span>(<span class="ident">file</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">File</span>) <span class="op">-&gt;</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Method</span><span class="op">&gt;&gt;</span> {
-    <span class="kw">let</span> <span class="ident">methods_count</span> <span class="op">=</span> <span class="ident">read_u16</span>(<span class="ident">file</span>)<span class="question-mark">?</span> <span class="kw">as</span> <span class="ident">i32</span>;
+    <span class="kw">let</span> <span class="ident">methods_count</span> <span class="op">=</span> <span class="ident">i32</span>::<span class="ident">from</span>(<span class="ident">read_u16</span>(<span class="ident">file</span>)<span class="question-mark">?</span>);
 
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">methods</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="op">&lt;</span><span class="ident">Method</span><span class="op">&gt;</span>::<span class="ident">new</span>();
 
