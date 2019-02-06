@@ -21,7 +21,7 @@ impl Method {
                 attr.attribute_name_index as usize
             );
 
-            if let &ConstantUtf8 { ref string } = name_constant.deref() {
+            if let ConstantUtf8 { ref string } = *name_constant.deref() {
                 if string == "Code" {
                     return Some(Code::from_bytes(&attr.info))
                 }

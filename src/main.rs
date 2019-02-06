@@ -78,19 +78,19 @@ fn print_constant_pool(class_file: &ClassFile) {
 }
 
 fn format_constant_pool_entry(
-        class_file: &ClassFile, constant: &Box<ConstantPoolEntry>
+        class_file: &ClassFile, constant: &ConstantPoolEntry
     ) -> String {
     use ConstantPoolEntry::*;
 
-    match constant.deref() {
-        &ConstantUtf8 { ref string } => {
+    match *constant.deref() {
+        ConstantUtf8 { ref string } => {
             format!(
                 "{:<20}{}",
                 "Utf8",
                 string
             )
         },
-        &ConstantClass { name_index } => {
+        ConstantClass { name_index } => {
             format!(
                 "{:<20}{:<16}// {}",
                 "Class",
@@ -98,7 +98,7 @@ fn format_constant_pool_entry(
                 class_file.get_constant_utf8(name_index as usize)
             )
         },
-        &ConstantFieldref { class_index, name_and_type_index } => {
+        ConstantFieldref { class_index, name_and_type_index } => {
             format!(
                 "{:<20}{:<16}// {}",
                 "Fieldref",
@@ -112,7 +112,7 @@ fn format_constant_pool_entry(
                 )
             )
         },
-        &ConstantMethodref { class_index, name_and_type_index } => {
+        ConstantMethodref { class_index, name_and_type_index } => {
             format!(
                 "{:<20}{:<16}// {}",
                 "Methodref",
@@ -126,7 +126,7 @@ fn format_constant_pool_entry(
                 )
             )
         },
-        &ConstantNameAndType { name_index, descriptor_index } => {
+        ConstantNameAndType { name_index, descriptor_index } => {
             format!(
                 "{:<20}{:<16}// {}",
                 "NameAndType",
@@ -172,12 +172,12 @@ fn print_method(class_file: &ClassFile, method: &Method) {
 
     print_bytecode(class_file, &code.code);
 
-    if code.exception_table.len() > 0 {
+    if !code.exception_table.is_empty() {
         print_exception_table(class_file, &code.exception_table);
     }
 }
 
-fn print_bytecode(class_file: &ClassFile, code: &Vec<(usize, Bytecode)>) {
+fn print_bytecode(class_file: &ClassFile, code: &[(usize, Bytecode)]) {
     for (i, bytecode) in code {
         print!(
             "        {:>3}: {:35}",
@@ -192,7 +192,7 @@ fn print_bytecode(class_file: &ClassFile, code: &Vec<(usize, Bytecode)>) {
 }
 
 fn print_exception_table(
-        class_file: &ClassFile, exception_table: &Vec<ExceptionTableEntry>
+        class_file: &ClassFile, exception_table: &[ExceptionTableEntry]
     ) {
     println!("      Exception table:");
     println!("         from    to  target type");

@@ -9,7 +9,7 @@ use constant_pool::*;
 use field::*;
 use method::*;
 
-const EXPECTED_MAGIC: u32 = 0xCAFEBABE;
+const EXPECTED_MAGIC: u32 = 0xCAFE_BABE;
 
 const CONSTANT_TAG_UTF8: u8 = 1;
 const CONSTANT_TAG_CLASS: u8 = 7;
@@ -57,7 +57,7 @@ pub fn read_class_file(file: &mut File) -> io::Result<ClassFile> {
 fn read_u8(file: &mut File) -> io::Result<u8> {
     let mut buffer = [0; 1];
 
-    file.read(&mut buffer)?;
+    file.read_exact(&mut buffer)?;
 
     Ok(u8::from_be_bytes(buffer))
 }
@@ -65,7 +65,7 @@ fn read_u8(file: &mut File) -> io::Result<u8> {
 fn read_u16(file: &mut File) -> io::Result<u16> {
     let mut buffer = [0; 2];
 
-    file.read(&mut buffer)?;
+    file.read_exact(&mut buffer)?;
 
     Ok(u16::from_be_bytes(buffer))
 }
@@ -73,7 +73,7 @@ fn read_u16(file: &mut File) -> io::Result<u16> {
 fn read_u32(file: &mut File) -> io::Result<u32> {
     let mut buffer = [0; 4];
 
-    file.read(&mut buffer)?;
+    file.read_exact(&mut buffer)?;
 
     Ok(u32::from_be_bytes(buffer))
 }
@@ -87,7 +87,7 @@ fn read_n_bytes(file: &mut File, length: usize) -> io::Result<Vec<u8>> {
 }
 
 fn read_constant_pool(file: &mut File) -> io::Result<Vec<Box<ConstantPoolEntry>>> {
-    let constant_pool_count = read_u16(file)? as i32;
+    let constant_pool_count = i32::from(read_u16(file)?);
 
     let mut constant_pool = Vec::<Box<ConstantPoolEntry>>::new();
 
@@ -172,7 +172,7 @@ fn read_constant_name_and_type(file: &mut File) -> io::Result<ConstantPoolEntry>
 }
 
 fn read_interfaces(file: &mut File) -> io::Result<Vec<u16>> {
-    let interfaces_count = read_u16(file)? as i32;
+    let interfaces_count = i32::from(read_u16(file)?);
 
     let mut interfaces = Vec::<u16>::new();
 
@@ -186,7 +186,7 @@ fn read_interfaces(file: &mut File) -> io::Result<Vec<u16>> {
 }
 
 fn read_fields(file: &mut File) -> io::Result<Vec<Field>> {
-    let fields_count = read_u16(file)? as i32;
+    let fields_count = i32::from(read_u16(file)?);
 
     let mut fields = Vec::<Field>::new();
 
@@ -215,7 +215,7 @@ fn read_field(file: &mut File) -> io::Result<Field> {
 }
 
 fn read_methods(file: &mut File) -> io::Result<Vec<Method>> {
-    let methods_count = read_u16(file)? as i32;
+    let methods_count = i32::from(read_u16(file)?);
 
     let mut methods = Vec::<Method>::new();
 
