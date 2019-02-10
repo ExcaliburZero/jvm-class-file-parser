@@ -1,5 +1,3 @@
-use std::collections::HashSet;
-use std::fs::File;
 use std::io;
 use std::io::{Error, ErrorKind, Read};
 use std::str;
@@ -20,7 +18,7 @@ const CONSTANT_TAG_FIELDREF: u8 = 9;
 const CONSTANT_TAG_METHODREF: u8 = 10;
 const CONSTANT_TAG_NAME_AND_TYPE: u8 = 12;
 
-pub fn read_class_file(file: &mut File) -> io::Result<ClassFile> {
+pub fn read_class_file<R: Read>(file: &mut R) -> io::Result<ClassFile> {
     let magic = read_u32(file)?;
 
     if magic != EXPECTED_MAGIC {
@@ -61,7 +59,7 @@ pub fn read_class_file(file: &mut File) -> io::Result<ClassFile> {
     })
 }
 
-fn read_u8(file: &mut File) -> io::Result<u8> {
+fn read_u8<R: Read>(file: &mut R) -> io::Result<u8> {
     let mut buffer = [0; 1];
 
     file.read_exact(&mut buffer)?;
@@ -69,7 +67,7 @@ fn read_u8(file: &mut File) -> io::Result<u8> {
     Ok(u8::from_be_bytes(buffer))
 }
 
-fn read_u16(file: &mut File) -> io::Result<u16> {
+fn read_u16<R: Read>(file: &mut R) -> io::Result<u16> {
     let mut buffer = [0; 2];
 
     file.read_exact(&mut buffer)?;
@@ -77,7 +75,7 @@ fn read_u16(file: &mut File) -> io::Result<u16> {
     Ok(u16::from_be_bytes(buffer))
 }
 
-fn read_u32(file: &mut File) -> io::Result<u32> {
+fn read_u32<R: Read>(file: &mut R) -> io::Result<u32> {
     let mut buffer = [0; 4];
 
     file.read_exact(&mut buffer)?;
@@ -85,7 +83,7 @@ fn read_u32(file: &mut File) -> io::Result<u32> {
     Ok(u32::from_be_bytes(buffer))
 }
 
-fn read_n_bytes(file: &mut File, length: usize) -> io::Result<Vec<u8>> {
+fn read_n_bytes<R: Read>(file: &mut R, length: usize) -> io::Result<Vec<u8>> {
     let mut bytes = vec![0u8; length as usize];
 
     file.read_exact(&mut bytes)?;
@@ -93,7 +91,7 @@ fn read_n_bytes(file: &mut File, length: usize) -> io::Result<Vec<u8>> {
     Ok(bytes)
 }
 
-fn read_constant_pool(file: &mut File) -> io::Result<Vec<Box<ConstantPoolEntry>>> {
+fn read_constant_pool<R: Read>(file: &mut R) -> io::Result<Vec<Box<ConstantPoolEntry>>> {
     let constant_pool_count = i32::from(read_u16(file)?);
 
     let mut constant_pool = Vec::<Box<ConstantPoolEntry>>::new();
@@ -107,7 +105,7 @@ fn read_constant_pool(file: &mut File) -> io::Result<Vec<Box<ConstantPoolEntry>>
     Ok(constant_pool)
 }
 
-fn read_constant_pool_entry(file: &mut File) -> io::Result<Box<ConstantPoolEntry>> {
+fn read_constant_pool_entry<R: Read>(file: &mut R) -> io::Result<Box<ConstantPoolEntry>> {
     let tag = read_u8(file)?;
 
     let entry: Box<ConstantPoolEntry> = match tag {
@@ -127,7 +125,7 @@ fn read_constant_pool_entry(file: &mut File) -> io::Result<Box<ConstantPoolEntry
     Ok(entry)
 }
 
-fn read_constant_utf8(file: &mut File) -> io::Result<ConstantPoolEntry> {
+fn read_constant_utf8<R: Read>(file: &mut R) -> io::Result<ConstantPoolEntry> {
     let length = read_u16(file)?;
 
     let bytes = read_n_bytes(file, length as usize)?;
@@ -140,7 +138,7 @@ fn read_constant_utf8(file: &mut File) -> io::Result<ConstantPoolEntry> {
     })
 }
 
-fn read_constant_class(file: &mut File) -> io::Result<ConstantPoolEntry> {
+fn read_constant_class<R: Read>(file: &mut R) -> io::Result<ConstantPoolEntry> {
     let name_index = read_u16(file)?;
 
     Ok(ConstantPoolEntry::ConstantClass {
@@ -148,7 +146,7 @@ fn read_constant_class(file: &mut File) -> io::Result<ConstantPoolEntry> {
     })
 }
 
-fn read_constant_fieldref(file: &mut File) -> io::Result<ConstantPoolEntry> {
+fn read_constant_fieldref<R: Read>(file: &mut R) -> io::Result<ConstantPoolEntry> {
     let class_index = read_u16(file)?;
     let name_and_type_index = read_u16(file)?;
 
@@ -158,7 +156,7 @@ fn read_constant_fieldref(file: &mut File) -> io::Result<ConstantPoolEntry> {
     })
 }
 
-fn read_constant_methodref(file: &mut File) -> io::Result<ConstantPoolEntry> {
+fn read_constant_methodref<R: Read>(file: &mut R) -> io::Result<ConstantPoolEntry> {
     let class_index = read_u16(file)?;
     let name_and_type_index = read_u16(file)?;
 
@@ -168,7 +166,7 @@ fn read_constant_methodref(file: &mut File) -> io::Result<ConstantPoolEntry> {
     })
 }
 
-fn read_constant_name_and_type(file: &mut File) -> io::Result<ConstantPoolEntry> {
+fn read_constant_name_and_type<R: Read>(file: &mut R) -> io::Result<ConstantPoolEntry> {
     let name_index = read_u16(file)?;
     let descriptor_index = read_u16(file)?;
 
@@ -178,7 +176,7 @@ fn read_constant_name_and_type(file: &mut File) -> io::Result<ConstantPoolEntry>
     })
 }
 
-fn read_interfaces(file: &mut File) -> io::Result<Vec<u16>> {
+fn read_interfaces<R: Read>(file: &mut R) -> io::Result<Vec<u16>> {
     let interfaces_count = i32::from(read_u16(file)?);
 
     let mut interfaces = Vec::<u16>::new();
@@ -192,7 +190,7 @@ fn read_interfaces(file: &mut File) -> io::Result<Vec<u16>> {
     Ok(interfaces)
 }
 
-fn read_fields(file: &mut File) -> io::Result<Vec<Field>> {
+fn read_fields<R: Read>(file: &mut R) -> io::Result<Vec<Field>> {
     let fields_count = i32::from(read_u16(file)?);
 
     let mut fields = Vec::<Field>::new();
@@ -206,7 +204,7 @@ fn read_fields(file: &mut File) -> io::Result<Vec<Field>> {
     Ok(fields)
 }
 
-fn read_field(file: &mut File) -> io::Result<Field> {
+fn read_field<R: Read>(file: &mut R) -> io::Result<Field> {
     let access_flags = read_u16(file)?;
     let name_index = read_u16(file)?;
     let descriptor_index = read_u16(file)?;
@@ -221,7 +219,7 @@ fn read_field(file: &mut File) -> io::Result<Field> {
     })
 }
 
-fn read_methods(file: &mut File) -> io::Result<Vec<Method>> {
+fn read_methods<R: Read>(file: &mut R) -> io::Result<Vec<Method>> {
     let methods_count = i32::from(read_u16(file)?);
 
     let mut methods = Vec::<Method>::new();
@@ -235,7 +233,7 @@ fn read_methods(file: &mut File) -> io::Result<Vec<Method>> {
     Ok(methods)
 }
 
-fn read_method(file: &mut File) -> io::Result<Method> {
+fn read_method<R: Read>(file: &mut R) -> io::Result<Method> {
     let access_flags = read_u16(file)?;
     let name_index = read_u16(file)?;
     let descriptor_index = read_u16(file)?;
@@ -250,7 +248,7 @@ fn read_method(file: &mut File) -> io::Result<Method> {
     })
 }
 
-fn read_attributes(file: &mut File) -> io::Result<Vec<Attribute>> {
+fn read_attributes<R: Read>(file: &mut R) -> io::Result<Vec<Attribute>> {
     let attributes_count = read_u16(file)?;
 
     let mut attributes = Vec::<Attribute>::new();
@@ -264,7 +262,7 @@ fn read_attributes(file: &mut File) -> io::Result<Vec<Attribute>> {
     Ok(attributes)
 }
 
-fn read_attribute(file: &mut File) -> io::Result<Attribute> {
+fn read_attribute<R: Read>(file: &mut R) -> io::Result<Attribute> {
     let attribute_name_index = read_u16(file)?;
     let attribute_length = read_u32(file)?;
 

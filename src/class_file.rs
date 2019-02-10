@@ -1,6 +1,7 @@
 use std::collections::HashSet;
 use std::fs::File;
 use std::io;
+use std::io::Read;
 use std::ops::Deref;
 
 use attribute::*;
@@ -41,7 +42,7 @@ impl ClassFile {
     /// let mut file = File::open("classes/Dummy.class").unwrap();
     /// let class_file = ClassFile::from_file(&mut file).unwrap();
     /// ```
-    pub fn from_file(file: &mut File) -> io::Result<ClassFile> {
+    pub fn from_file<R: Read>(file: &mut R) -> io::Result<ClassFile> {
         parsing::read_class_file(file)
     }
 
