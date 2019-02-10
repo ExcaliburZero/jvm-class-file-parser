@@ -3,6 +3,8 @@ use bytecode::*;
 const EXCEPTION_ENTRY_LENGTH: usize = 8;
 
 #[derive(Debug)]
+#[derive(Eq)]
+#[derive(PartialEq)]
 pub struct Attribute {
     pub attribute_name_index: u16,
     pub info: Vec<u8>,

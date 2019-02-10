@@ -1,7 +1,11 @@
 extern crate jvm_class_file_parser;
 
+use std::collections::HashSet;
 use std::fs::File;
-use jvm_class_file_parser::{Bytecode, ClassAccess, ClassFile, Code};
+
+use jvm_class_file_parser::{
+    Bytecode, ClassAccess, ClassFile, Code, Field, FieldAccess
+};
 
 #[test]
 fn parse_class_dummy() {
@@ -15,6 +19,8 @@ fn parse_class_dummy() {
     assert_eq!(2, class_file.access_flags.len());
     assert!(class_file.access_flags.contains(&ClassAccess::Public));
     assert!(class_file.access_flags.contains(&ClassAccess::Super));
+
+    assert_eq!(0, class_file.fields.len());
 
     assert_eq!(1, class_file.methods.len());
 
@@ -49,6 +55,23 @@ fn parse_class_intbox() {
     assert_eq!(2, class_file.access_flags.len());
     assert!(class_file.access_flags.contains(&ClassAccess::Public));
     assert!(class_file.access_flags.contains(&ClassAccess::Super));
+
+    assert_eq!(1, class_file.fields.len());
+
+    let field = &class_file.fields[0];
+
+    let mut field_access_flags = HashSet::new();
+    field_access_flags.insert(FieldAccess::Private);
+
+    assert_eq!(
+        Field {
+            access_flags: field_access_flags,
+            name_index: 5,
+            descriptor_index: 6,
+            attributes: vec![],
+        },
+        *field
+    );
 
     assert_eq!(2, class_file.methods.len());
 

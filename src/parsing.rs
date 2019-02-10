@@ -7,6 +7,7 @@ use class_access::*;
 use class_file::ClassFile;
 use constant_pool::*;
 use field::*;
+use field_access::*;
 use method::*;
 use util::promote_result_to_io;
 
@@ -210,6 +211,10 @@ fn read_field<R: Read>(file: &mut R) -> io::Result<Field> {
     let descriptor_index = read_u16(file)?;
 
     let attributes = read_attributes(file)?;
+
+    let access_flags = promote_result_to_io(
+        FieldAccess::from_access_flags(access_flags)
+    )?;
 
     Ok(Field {
         access_flags,
