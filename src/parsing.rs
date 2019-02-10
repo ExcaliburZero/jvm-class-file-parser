@@ -1,13 +1,16 @@
+use std::collections::HashSet;
 use std::fs::File;
 use std::io;
 use std::io::{Error, ErrorKind, Read};
 use std::str;
 
 use attribute::*;
+use class_access::*;
 use class_file::ClassFile;
 use constant_pool::*;
 use field::*;
 use method::*;
+use util::promote_result_to_io;
 
 const EXPECTED_MAGIC: u32 = 0xCAFE_BABE;
 
@@ -39,6 +42,10 @@ pub fn read_class_file(file: &mut File) -> io::Result<ClassFile> {
     let fields = read_fields(file)?;
     let methods = read_methods(file)?;
     let attributes = read_attributes(file)?;
+
+    let access_flags = promote_result_to_io(
+        ClassAccess::from_access_flags(access_flags)
+    )?;
 
     Ok(ClassFile {
         minor_version,

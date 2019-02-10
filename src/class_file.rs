@@ -1,8 +1,10 @@
+use std::collections::HashSet;
 use std::fs::File;
 use std::io;
 use std::ops::Deref;
 
 use attribute::*;
+use class_access::*;
 use constant_pool::*;
 use field::*;
 use method::*;
@@ -19,7 +21,7 @@ pub struct ClassFile {
     pub minor_version: u16,
     pub major_version: u16,
     pub constant_pool: Vec<Box<ConstantPoolEntry>>,
-    pub access_flags: u16,
+    pub access_flags: HashSet<ClassAccess>,
     pub this_class: u16,
     pub super_class: u16,
     pub interfaces: Vec<u16>,

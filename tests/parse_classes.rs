@@ -1,7 +1,7 @@
 extern crate jvm_class_file_parser;
 
 use std::fs::File;
-use jvm_class_file_parser::{Bytecode, ClassFile, Code};
+use jvm_class_file_parser::{Bytecode, ClassAccess, ClassFile, Code};
 
 #[test]
 fn parse_class_dummy() {
@@ -11,6 +11,10 @@ fn parse_class_dummy() {
     assert_eq!("Dummy", class_file.get_class_name());
 
     assert_eq!(Some("Dummy.java"), class_file.get_source_file_name());
+
+    assert_eq!(2, class_file.access_flags.len());
+    assert!(class_file.access_flags.contains(&ClassAccess::Public));
+    assert!(class_file.access_flags.contains(&ClassAccess::Super));
 
     assert_eq!(1, class_file.methods.len());
 
@@ -41,6 +45,10 @@ fn parse_class_intbox() {
     assert_eq!("IntBox", class_file.get_class_name());
 
     assert_eq!(Some("IntBox.java"), class_file.get_source_file_name());
+
+    assert_eq!(2, class_file.access_flags.len());
+    assert!(class_file.access_flags.contains(&ClassAccess::Public));
+    assert!(class_file.access_flags.contains(&ClassAccess::Super));
 
     assert_eq!(2, class_file.methods.len());
 

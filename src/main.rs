@@ -1,5 +1,6 @@
 extern crate jvm_class_file_parser;
 
+use std::collections::HashSet;
 use std::env;
 use std::fs;
 use std::fs::File;
@@ -8,7 +9,8 @@ use std::ops::Deref;
 use std::path::PathBuf;
 
 use jvm_class_file_parser::{
-    Bytecode, ClassFile, ConstantPoolEntry, ExceptionTableEntry, Method
+    Bytecode, ClassAccess, ClassFile, ConstantPoolEntry, ExceptionTableEntry,
+    Method
 };
 
 const CONSTURCTOR_NAME: &str = "<init>";
@@ -39,6 +41,8 @@ fn javap(filepath: &str) {
     println!("  minor version: {}", class_file.minor_version);
     println!("  major version: {}", class_file.major_version);
 
+    print_access_flags(&class_file.access_flags);
+
     print_constant_pool(&class_file);
 
     println!("{}", "{");
@@ -60,6 +64,31 @@ fn to_absolute_filepath(filepath: &str) -> io::Result<PathBuf> {
     let path = PathBuf::from(filepath);
 
     fs::canonicalize(path)
+}
+
+fn print_access_flags(access_flags: &HashSet<ClassAccess>) {
+    let flags_str = access_flags.iter()
+        .map(access_flag_to_name)
+        .collect::<Vec<&str>>()
+        .join(", ");
+
+    println!("  flags: {}", flags_str);
+}
+
+fn access_flag_to_name(flag: &ClassAccess) -> &'static str {
+    use ClassAccess::*;
+
+    match flag {
+        Public => "PUBLIC_FLAG",
+        Final => "FINAL_FLAG",
+        Super => "SUPER_FLAG",
+        Interface => "INTERFACE_FLAG",
+        Abstract => "ABSTRACT_FLAG",
+        Synthetic => "SYNTHETIC_FLAG",
+        Annotation => "ANNOTATION_FLAG",
+        Enum => "ENUM_FLAG",
+        Module => "MODULE_FLAG",
+    }
 }
 
 fn print_constant_pool(class_file: &ClassFile) {

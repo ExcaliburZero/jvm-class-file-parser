@@ -16,14 +16,17 @@
 mod attribute;
 mod bytecode;
 mod class_file;
+mod class_access;
 mod constant_pool;
 mod field;
 mod method;
 mod parsing;
+mod util;
 
 pub use attribute::*;
 pub use bytecode::*;
 pub use class_file::*;
+pub use class_access::*;
 pub use constant_pool::*;
 pub use field::*;
 pub use method::*;
