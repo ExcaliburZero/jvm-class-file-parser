@@ -82,12 +82,16 @@
 <span id="82">82</span>
 <span id="83">83</span>
 <span id="84">84</span>
+<span id="85">85</span>
+<span id="86">86</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="ident">bytecode</span>::<span class="kw-2">*</span>;
 
 <span class="kw">const</span> <span class="ident">EXCEPTION_ENTRY_LENGTH</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="number">8</span>;
 
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Eq</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">PartialEq</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Attribute</span> {
     <span class="kw">pub</span> <span class="ident">attribute_name_index</span>: <span class="ident">u16</span>,
     <span class="kw">pub</span> <span class="ident">info</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>,
