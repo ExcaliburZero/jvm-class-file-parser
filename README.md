@@ -8,7 +8,7 @@ Classfile /home/chris/Code/jvm-class-file-parser/classes/Dummy.class
 class Dummy
   minor version: 0
   major version: 52
-  flags: PUBLIC_FLAG, SUPER_FLAG
+  flags: ACC_PUBLIC, ACC_SUPER
 Constant pool:
    #1 = Methodref           #3.#10          // java/lang/Object."<init>":()V
    #2 = Class               #11             // Dummy

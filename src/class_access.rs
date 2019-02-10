@@ -21,10 +21,13 @@ const MODULE_FLAG: u16 = 0x8000;
 /// details.
 ///
 /// https://docs.oracle.com/javase/specs/jvms/se11/html/jvms-4.html#jvms-4.1-200-E
+#[derive(Clone)]
 #[derive(Debug)]
 #[derive(Eq)]
 #[derive(Hash)]
+#[derive(Ord)]
 #[derive(PartialEq)]
+#[derive(PartialOrd)]
 pub enum ClassAccess {
     Public,
     Final,

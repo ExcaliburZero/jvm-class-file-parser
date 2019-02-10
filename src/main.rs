@@ -67,6 +67,11 @@ fn to_absolute_filepath(filepath: &str) -> io::Result<PathBuf> {
 }
 
 fn print_access_flags(access_flags: &HashSet<ClassAccess>) {
+    let mut access_flags = access_flags.iter()
+        .cloned()
+        .collect::<Vec<ClassAccess>>();
+    access_flags.sort();
+
     let flags_str = access_flags.iter()
         .map(access_flag_to_name)
         .collect::<Vec<&str>>()
@@ -79,15 +84,15 @@ fn access_flag_to_name(flag: &ClassAccess) -> &'static str {
     use ClassAccess::*;
 
     match flag {
-        Public => "PUBLIC_FLAG",
-        Final => "FINAL_FLAG",
-        Super => "SUPER_FLAG",
-        Interface => "INTERFACE_FLAG",
-        Abstract => "ABSTRACT_FLAG",
-        Synthetic => "SYNTHETIC_FLAG",
-        Annotation => "ANNOTATION_FLAG",
-        Enum => "ENUM_FLAG",
-        Module => "MODULE_FLAG",
+        Public => "ACC_PUBLIC",
+        Final => "ACC_FINAL",
+        Super => "ACC_SUPER",
+        Interface => "ACC_INTERFACE",
+        Abstract => "ACC_ABSTRACT",
+        Synthetic => "ACC_SYNTHETIC",
+        Annotation => "ACC_ANNOTATION",
+        Enum => "ACC_ENUM",
+        Module => "ACC_MODULE",
     }
 }
 
