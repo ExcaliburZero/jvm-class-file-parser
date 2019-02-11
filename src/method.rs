@@ -1,3 +1,4 @@
+use std::io;
 use std::ops::Deref;
 
 use attribute::*;
@@ -13,7 +14,7 @@ pub struct Method {
 }
 
 impl Method {
-    pub fn get_code(&self, class_file: &ClassFile) -> Option<Code> {
+    pub fn get_code(&self, class_file: &ClassFile) -> io::Result<Option<Code>> {
         use ConstantPoolEntry::*;
 
         for attr in self.attributes.iter() {
@@ -23,11 +24,11 @@ impl Method {
 
             if let ConstantUtf8 { ref string } = *name_constant.deref() {
                 if string == "Code" {
-                    return Some(Code::from_bytes(&attr.info))
+                    return Ok(Some(Code::from_bytes(&attr.info)?))
                 }
             }
         }
 
-        None
+        Ok(None)
     }
 }

@@ -1,4 +1,7 @@
+use std::io;
+
 use bytecode::*;
+use parsing;
 
 const EXCEPTION_ENTRY_LENGTH: usize = 8;
 
@@ -17,11 +20,12 @@ pub struct Code {
     pub max_locals: u16,
     pub code: Vec<(usize, Bytecode)>,
     pub exception_table: Vec<ExceptionTableEntry>,
+    pub attributes: Vec<Attribute>,
 }
 // TODO: read attributes of code
 
 impl Code {
-    pub fn from_bytes(bytes: &[u8]) -> Code {
+    pub fn from_bytes(bytes: &[u8]) -> io::Result<Code> {
         let max_stack = u16::from_be_bytes([bytes[0], bytes[1]]);
         let max_locals = u16::from_be_bytes([bytes[2], bytes[3]]);
 
@@ -51,12 +55,19 @@ impl Code {
             exception_table.push(entry);
         }
 
-        Code {
+        let attributes_start = (code_end + 2) +
+            exception_table_length * EXCEPTION_ENTRY_LENGTH;
+
+        let mut attribute_bytes = &bytes[attributes_start..];
+        let attributes = parsing::read_attributes(&mut attribute_bytes)?;
+
+        Ok(Code {
             max_stack,
             max_locals,
             code,
             exception_table,
-        }
+            attributes,
+        })
     }
 }
 

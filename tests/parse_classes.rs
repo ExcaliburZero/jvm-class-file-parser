@@ -4,7 +4,7 @@ use std::collections::HashSet;
 use std::fs::File;
 
 use jvm_class_file_parser::{
-    Bytecode, ClassAccess, ClassFile, Code, Field, FieldAccess
+    Attribute, Bytecode, ClassAccess, ClassFile, Code, Field, FieldAccess
 };
 
 #[test]
@@ -38,8 +38,14 @@ fn parse_class_dummy() {
                 (4, Return),
             ],
             exception_table: vec![],
+            attributes: vec![
+                Attribute {
+                    attribute_name_index: 7,
+                    info: vec![0, 1, 0, 0, 0, 1],
+                }
+            ],
         }),
-        code
+        code.unwrap()
     );
 }
 
@@ -92,8 +98,14 @@ fn parse_class_intbox() {
                 (9, Return),
             ],
             exception_table: vec![],
+            attributes: vec![
+                Attribute {
+                    attribute_name_index: 10,
+                    info: vec![0, 3, 0, 0, 0, 4, 0, 4, 0, 5, 0, 9, 0, 6],
+                }
+            ],
         }),
-        constructor_code
+        constructor_code.unwrap()
     );
 
     let get_value = &class_file.methods[1];
@@ -109,7 +121,13 @@ fn parse_class_intbox() {
                 (4, Ireturn),
             ],
             exception_table: vec![],
+            attributes: vec![
+                Attribute {
+                    attribute_name_index: 10,
+                    info: vec![0, 1, 0, 0, 0, 9],
+                }
+            ],
         }),
-       get_value_code
+       get_value_code.unwrap()
     );
 }

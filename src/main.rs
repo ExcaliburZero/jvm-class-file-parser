@@ -194,7 +194,7 @@ fn print_method(class_file: &ClassFile, method: &Method) {
         "    flags: TODO",
     );
 
-    let code = method.get_code(class_file).unwrap();
+    let code = method.get_code(class_file).unwrap().unwrap();
 
     println!("    Code:");
     println!(
