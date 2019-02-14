@@ -1,7 +1,7 @@
 use std::collections::HashSet;
 use std::fs::File;
 use std::io;
-use std::io::Read;
+use std::io::{Read, Write};
 use std::ops::Deref;
 
 use attribute::*;
@@ -10,6 +10,7 @@ use constant_pool::*;
 use field::*;
 use method::*;
 use parsing;
+use writing;
 
 /// A representation of a JVM class file.
 ///
@@ -44,6 +45,10 @@ impl ClassFile {
     /// ```
     pub fn from_file<R: Read>(file: &mut R) -> io::Result<ClassFile> {
         parsing::read_class_file(file)
+    }
+
+    pub fn to_file<W: Write>(&self, file: &mut W) -> io::Result<()> {
+        writing::write_class_file(file, self)
     }
 
     /// Returns the name of the class file.

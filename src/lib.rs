@@ -23,6 +23,7 @@ mod field_access;
 mod method;
 mod parsing;
 mod util;
+mod writing;
 
 pub use attribute::*;
 pub use bytecode::*;

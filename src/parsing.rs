@@ -9,7 +9,7 @@ use constant_pool::*;
 use field::*;
 use field_access::*;
 use method::*;
-use util::promote_result_to_io;
+use util::{Contextable, io_err, promote_result_to_io};
 
 const EXPECTED_MAGIC: u32 = 0xCAFE_BABE;
 
@@ -18,6 +18,17 @@ const CONSTANT_TAG_CLASS: u8 = 7;
 const CONSTANT_TAG_FIELDREF: u8 = 9;
 const CONSTANT_TAG_METHODREF: u8 = 10;
 const CONSTANT_TAG_NAME_AND_TYPE: u8 = 12;
+
+const READ_MINOR_VERSION: &str = "Failed to read minor version.";
+const READ_MAJOR_VERSION: &str = "Failed to read major version.";
+const READ_CONSTANT_POOL: &str = "Failed to read constant pool.";
+const READ_ACCESS_FLAGS: &str = "Failed to read access flags.";
+const READ_THIS_CLASS: &str = "Failed to read the 'this class' index.";
+const READ_SUPER_CLASS: &str = "Failed to read the 'super class' index.";
+const READ_INTERFACES: &str = "Failed to read interfaces.";
+const READ_FIELDS: &str = "Failed to read fields.";
+const READ_METHODS: &str = "Failed to read methods.";
+const READ_ATTRIBUTES: &str = "Failed to read attributes.";
 
 pub fn read_class_file<R: Read>(file: &mut R) -> io::Result<ClassFile> {
     let magic = read_u32(file)?;
@@ -28,19 +39,19 @@ pub fn read_class_file<R: Read>(file: &mut R) -> io::Result<ClassFile> {
         return Err(Error::new(ErrorKind::Other, error_msg))
     }
 
-    let minor_version = read_u16(file)?;
-    let major_version = read_u16(file)?;
+    let minor_version = read_u16(file).context(READ_MINOR_VERSION)?;
+    let major_version = read_u16(file).context(READ_MAJOR_VERSION)?;
 
-    let constant_pool = read_constant_pool(file)?;
+    let constant_pool = read_constant_pool(file).context(READ_CONSTANT_POOL)?;
 
-    let access_flags = read_u16(file)?;
-    let this_class = read_u16(file)?;
-    let super_class = read_u16(file)?;
+    let access_flags = read_u16(file).context(READ_ACCESS_FLAGS)?;
+    let this_class = read_u16(file).context(READ_THIS_CLASS)?;
+    let super_class = read_u16(file).context(READ_SUPER_CLASS)?;
 
-    let interfaces = read_interfaces(file)?;
-    let fields = read_fields(file)?;
-    let methods = read_methods(file)?;
-    let attributes = read_attributes(file)?;
+    let interfaces = read_interfaces(file).context(READ_INTERFACES)?;
+    let fields = read_fields(file).context(READ_FIELDS)?;
+    let methods = read_methods(file).context(READ_METHODS)?;
+    let attributes = read_attributes(file).context(READ_ATTRIBUTES)?;
 
     let access_flags = promote_result_to_io(
         ClassAccess::from_access_flags(access_flags)

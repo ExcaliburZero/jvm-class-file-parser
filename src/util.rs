@@ -16,6 +16,26 @@ pub fn promote_result_to_io<A>(result: Result<A, String>) -> io::Result<A> {
     }
 }
 
+pub fn io_err(message: String) -> Error {
+    Error::new(ErrorKind::Other, message)
+}
+
+pub fn io_err_str(message: &str) -> Error {
+    Error::new(ErrorKind::Other, message)
+}
+
+/// A trait that is used to add a method to Result types to allow a context
+/// description message to be prepended to an error.
+pub trait Contextable {
+    fn context<S: Into<String>>(self, error_description: S) -> Self;
+}
+
+impl<A> Contextable for Result<A, io::Error> {
+    fn context<S: Into<String>>(self, error_description: S) -> io::Result<A> {
+        self.map_err(|e| io_err(format!("{} {}", error_description.into(), e)))
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use util::flag_is_set;
