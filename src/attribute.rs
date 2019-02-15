@@ -22,7 +22,6 @@ pub struct Code {
     pub exception_table: Vec<ExceptionTableEntry>,
     pub attributes: Vec<Attribute>,
 }
-// TODO: read attributes of code
 
 impl Code {
     pub fn from_bytes(bytes: &[u8]) -> io::Result<Code> {
