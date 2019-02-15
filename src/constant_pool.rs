@@ -1,4 +1,5 @@
 #[derive(Debug)]
+#[derive(Eq)]
 #[derive(PartialEq)]
 pub enum ConstantPoolEntry {
     ConstantUtf8 {

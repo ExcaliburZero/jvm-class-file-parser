@@ -1,8 +1,11 @@
 use std::io;
 use std::io::Write;
 
+use attribute::*;
+use class_access::*;
 use class_file::ClassFile;
 use constant_pool::*;
+use method::*;
 
 const MAGIC: u32 = 0xCAFE_BABE;
 
@@ -20,14 +23,14 @@ pub fn write_class_file<W: Write>(file: &mut W, class_file: &ClassFile) -> io::R
 
     write_constant_pool(file, &class_file.constant_pool)?;
 
-    write_u16(file, 0)?; //.access_flags
+    write_u16(file, ClassAccess::to_access_flags(&class_file.access_flags))?;
     write_u16(file, class_file.this_class)?;
     write_u16(file, class_file.super_class)?;
 
     write_u16(file, 0)?; // interfaces
     write_u16(file, 0)?; // fields
-    write_u16(file, 0)?; // methods
-    write_u16(file, 0)?; // attributes
+    write_methods(file, &class_file.methods)?;
+    write_attributes(file, &class_file.attributes)?;
 
     Ok(())
 }
@@ -103,6 +106,44 @@ fn write_constant_name_and_type<W: Write>(file: &mut W, name_index: u16, descrip
     write_u8(file, CONSTANT_TAG_NAME_AND_TYPE);
     write_u16(file, name_index);
     write_u16(file, descriptor_index);
+
+    Ok(())
+}
+
+fn write_methods<W: Write>(file: &mut W, methods: &Vec<Method>) -> io::Result<()> {
+    write_u16(file, methods.len() as u16)?;
+
+    for method in methods.iter() {
+        write_method(file, method);
+    }
+
+    Ok(())
+}
+
+fn write_method<W: Write>(file: &mut W, method: &Method) -> io::Result<()> {
+    write_u16(file, method.access_flags);
+    write_u16(file, method.name_index);
+    write_u16(file, method.descriptor_index);
+
+    write_attributes(file, &method.attributes);
+
+    Ok(())
+}
+
+fn write_attributes<W: Write>(file: &mut W, attributes: &Vec<Attribute>) -> io::Result<()> {
+    write_u16(file, attributes.len() as u16)?;
+
+    for attribute in attributes.iter() {
+        write_attribute(file, attribute);
+    }
+
+    Ok(())
+}
+
+fn write_attribute<W: Write>(file: &mut W, attributes: &Attribute) -> io::Result<()> {
+    write_u16(file, attributes.attribute_name_index);
+    write_u32(file, attributes.info.len() as u32);
+    write_n_bytes(file, &attributes.info);
 
     Ok(())
 }

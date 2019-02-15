@@ -6,6 +6,8 @@ use constant_pool::ConstantPoolEntry;
 use class_file::ClassFile;
 
 #[derive(Debug)]
+#[derive(Eq)]
+#[derive(PartialEq)]
 pub struct Method {
     pub access_flags: u16,
     pub name_index: u16,

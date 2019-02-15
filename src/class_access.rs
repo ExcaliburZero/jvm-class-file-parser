@@ -92,4 +92,22 @@ impl ClassAccess {
 
         Ok(access)
     }
+
+    pub fn to_access_flags(access_flags: &HashSet<ClassAccess>) -> u16 {
+        use ClassAccess::*;
+
+        let mut flags = 0;
+
+        if access_flags.contains(&Public) { flags ^= PUBLIC_FLAG; }
+        if access_flags.contains(&Final) { flags ^= FINAL_FLAG; }
+        if access_flags.contains(&Super) { flags ^= SUPER_FLAG; }
+        if access_flags.contains(&Interface) { flags ^= INTERFACE_FLAG; }
+        if access_flags.contains(&Abstract) { flags ^= ABSTRACT_FLAG; }
+        if access_flags.contains(&Synthetic) { flags ^= SYNTHETIC_FLAG; }
+        if access_flags.contains(&Annotation) { flags ^= ANNOTATION_FLAG; }
+        if access_flags.contains(&Enum) { flags ^= ENUM_FLAG; }
+        if access_flags.contains(&Module) { flags ^= MODULE_FLAG; }
+
+        flags
+    }
 }

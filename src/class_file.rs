@@ -19,6 +19,8 @@ use writing;
 ///
 /// https://docs.oracle.com/javase/specs/jvms/se11/html/jvms-4.html
 #[derive(Debug)]
+#[derive(Eq)]
+#[derive(PartialEq)]
 pub struct ClassFile {
     pub minor_version: u16,
     pub major_version: u16,
