@@ -315,4 +315,9 @@ mod tests {
     fn javap_exceptionthrows_runs_without_error() {
         javap("classes/ExceptionThrows.class");
     }
+
+    #[test]
+    fn javap_helloworld_runs_without_error() {
+        javap("classes/HelloWorld.class");
+    }
 }
