@@ -7,6 +7,9 @@ pub enum ConstantPoolEntry {
     ConstantClass {
         name_index: u16,
     },
+    ConstantString {
+        string_index: u16,
+    },
     ConstantFieldref {
         class_index: u16,
         name_and_type_index: u16,

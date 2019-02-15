@@ -15,6 +15,7 @@ const EXPECTED_MAGIC: u32 = 0xCAFE_BABE;
 
 const CONSTANT_TAG_UTF8: u8 = 1;
 const CONSTANT_TAG_CLASS: u8 = 7;
+const CONSTANT_TAG_STRING: u8 = 8;
 const CONSTANT_TAG_FIELDREF: u8 = 9;
 const CONSTANT_TAG_METHODREF: u8 = 10;
 const CONSTANT_TAG_NAME_AND_TYPE: u8 = 12;
@@ -44,14 +45,14 @@ pub fn read_class_file<R: Read>(file: &mut R) -> io::Result<ClassFile> {
 
     let constant_pool = read_constant_pool(file).context(READ_CONSTANT_POOL)?;
 
-    let access_flags = read_u16(file).context(READ_ACCESS_FLAGS)?;
-    let this_class = read_u16(file).context(READ_THIS_CLASS)?;
-    let super_class = read_u16(file).context(READ_SUPER_CLASS)?;
+    let access_flags  = read_u16(file).context(READ_ACCESS_FLAGS)?;
+    let this_class    = read_u16(file).context(READ_THIS_CLASS)?;
+    let super_class   = read_u16(file).context(READ_SUPER_CLASS)?;
 
-    let interfaces = read_interfaces(file).context(READ_INTERFACES)?;
-    let fields = read_fields(file).context(READ_FIELDS)?;
-    let methods = read_methods(file).context(READ_METHODS)?;
-    let attributes = read_attributes(file).context(READ_ATTRIBUTES)?;
+    let interfaces    = read_interfaces(file).context(READ_INTERFACES)?;
+    let fields        = read_fields(file).context(READ_FIELDS)?;
+    let methods       = read_methods(file).context(READ_METHODS)?;
+    let attributes    = read_attributes(file).context(READ_ATTRIBUTES)?;
 
     let access_flags = promote_result_to_io(
         ClassAccess::from_access_flags(access_flags)
@@ -125,6 +126,8 @@ fn read_constant_pool_entry<R: Read>(file: &mut R) -> io::Result<Box<ConstantPoo
             Box::new(read_constant_utf8(file)?),
         CONSTANT_TAG_CLASS =>
             Box::new(read_constant_class(file)?),
+        CONSTANT_TAG_STRING =>
+            Box::new(read_constant_string(file)?),
         CONSTANT_TAG_FIELDREF =>
             Box::new(read_constant_fieldref(file)?),
         CONSTANT_TAG_METHODREF =>
@@ -155,6 +158,14 @@ fn read_constant_class<R: Read>(file: &mut R) -> io::Result<ConstantPoolEntry> {
 
     Ok(ConstantPoolEntry::ConstantClass {
         name_index,
+    })
+}
+
+fn read_constant_string<R: Read>(file: &mut R) -> io::Result<ConstantPoolEntry> {
+    let string_index = read_u16(file)?;
+
+    Ok(ConstantPoolEntry::ConstantString {
+        string_index,
     })
 }
 

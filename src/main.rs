@@ -57,21 +57,6 @@ fn fun(filepath: &str) {
             Box::new(ConstantPoolEntry::ConstantUtf8 {
                 string: "java/lang/Object".to_string(),
             }),
-            /*Box::new(ConstantPoolEntry::ConstantClass {
-                name_index: 4,
-            }),
-            Box::new(ConstantPoolEntry::ConstantClass {
-                name_index: 4,
-            }),
-            Box::new(ConstantPoolEntry::ConstantClass {
-                name_index: 5,
-            }),
-            Box::new(ConstantPoolEntry::ConstantUtf8 {
-                string: "BadClazz".to_string(),
-            }),
-            Box::new(ConstantPoolEntry::ConstantUtf8 {
-                string: "java/lang/Object".to_string(),
-            }),*/
         ],
         access_flags: HashSet::new(),
         this_class: 2,
@@ -192,6 +177,14 @@ fn format_constant_pool_entry(
                 "Class",
                 format!("#{}", name_index),
                 class_file.get_constant_utf8(name_index as usize)
+            )
+        },
+        ConstantString { string_index } => {
+            format!(
+                "{:<20}{:<16}// {}",
+                "String",
+                format!("#{}", string_index),
+                class_file.get_constant_utf8(string_index as usize)
             )
         },
         ConstantFieldref { class_index, name_and_type_index } => {
