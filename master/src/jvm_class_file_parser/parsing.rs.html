@@ -278,6 +278,29 @@
 <span id="278">278</span>
 <span id="279">279</span>
 <span id="280">280</span>
+<span id="281">281</span>
+<span id="282">282</span>
+<span id="283">283</span>
+<span id="284">284</span>
+<span id="285">285</span>
+<span id="286">286</span>
+<span id="287">287</span>
+<span id="288">288</span>
+<span id="289">289</span>
+<span id="290">290</span>
+<span id="291">291</span>
+<span id="292">292</span>
+<span id="293">293</span>
+<span id="294">294</span>
+<span id="295">295</span>
+<span id="296">296</span>
+<span id="297">297</span>
+<span id="298">298</span>
+<span id="299">299</span>
+<span id="300">300</span>
+<span id="301">301</span>
+<span id="302">302</span>
+<span id="303">303</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">io</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">io</span>::{<span class="ident">Error</span>, <span class="ident">ErrorKind</span>, <span class="ident">Read</span>};
@@ -290,15 +313,27 @@
 <span class="kw">use</span> <span class="ident">field</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="ident">field_access</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="ident">method</span>::<span class="kw-2">*</span>;
-<span class="kw">use</span> <span class="ident">util</span>::<span class="ident">promote_result_to_io</span>;
+<span class="kw">use</span> <span class="ident">util</span>::{<span class="ident">Contextable</span>, <span class="ident">promote_result_to_io</span>};
 
 <span class="kw">const</span> <span class="ident">EXPECTED_MAGIC</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">0xCAFE_BABE</span>;
 
 <span class="kw">const</span> <span class="ident">CONSTANT_TAG_UTF8</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="number">1</span>;
 <span class="kw">const</span> <span class="ident">CONSTANT_TAG_CLASS</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="number">7</span>;
+<span class="kw">const</span> <span class="ident">CONSTANT_TAG_STRING</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="number">8</span>;
 <span class="kw">const</span> <span class="ident">CONSTANT_TAG_FIELDREF</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="number">9</span>;
 <span class="kw">const</span> <span class="ident">CONSTANT_TAG_METHODREF</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="number">10</span>;
 <span class="kw">const</span> <span class="ident">CONSTANT_TAG_NAME_AND_TYPE</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="number">12</span>;
+
+<span class="kw">const</span> <span class="ident">READ_MINOR_VERSION</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;Failed to read minor version.&quot;</span>;
+<span class="kw">const</span> <span class="ident">READ_MAJOR_VERSION</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;Failed to read major version.&quot;</span>;
+<span class="kw">const</span> <span class="ident">READ_CONSTANT_POOL</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;Failed to read constant pool.&quot;</span>;
+<span class="kw">const</span> <span class="ident">READ_ACCESS_FLAGS</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;Failed to read access flags.&quot;</span>;
+<span class="kw">const</span> <span class="ident">READ_THIS_CLASS</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;Failed to read the &#39;this class&#39; index.&quot;</span>;
+<span class="kw">const</span> <span class="ident">READ_SUPER_CLASS</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;Failed to read the &#39;super class&#39; index.&quot;</span>;
+<span class="kw">const</span> <span class="ident">READ_INTERFACES</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;Failed to read interfaces.&quot;</span>;
+<span class="kw">const</span> <span class="ident">READ_FIELDS</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;Failed to read fields.&quot;</span>;
+<span class="kw">const</span> <span class="ident">READ_METHODS</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;Failed to read methods.&quot;</span>;
+<span class="kw">const</span> <span class="ident">READ_ATTRIBUTES</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;Failed to read attributes.&quot;</span>;
 
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">read_class_file</span><span class="op">&lt;</span><span class="ident">R</span>: <span class="ident">Read</span><span class="op">&gt;</span>(<span class="ident">file</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">R</span>) <span class="op">-&gt;</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">ClassFile</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">magic</span> <span class="op">=</span> <span class="ident">read_u32</span>(<span class="ident">file</span>)<span class="question-mark">?</span>;
@@ -309,19 +344,19 @@
         <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error</span>::<span class="ident">new</span>(<span class="ident">ErrorKind</span>::<span class="ident">Other</span>, <span class="ident">error_msg</span>))
     }
 
-    <span class="kw">let</span> <span class="ident">minor_version</span> <span class="op">=</span> <span class="ident">read_u16</span>(<span class="ident">file</span>)<span class="question-mark">?</span>;
-    <span class="kw">let</span> <span class="ident">major_version</span> <span class="op">=</span> <span class="ident">read_u16</span>(<span class="ident">file</span>)<span class="question-mark">?</span>;
+    <span class="kw">let</span> <span class="ident">minor_version</span> <span class="op">=</span> <span class="ident">read_u16</span>(<span class="ident">file</span>).<span class="ident">context</span>(<span class="ident">READ_MINOR_VERSION</span>)<span class="question-mark">?</span>;
+    <span class="kw">let</span> <span class="ident">major_version</span> <span class="op">=</span> <span class="ident">read_u16</span>(<span class="ident">file</span>).<span class="ident">context</span>(<span class="ident">READ_MAJOR_VERSION</span>)<span class="question-mark">?</span>;
 
-    <span class="kw">let</span> <span class="ident">constant_pool</span> <span class="op">=</span> <span class="ident">read_constant_pool</span>(<span class="ident">file</span>)<span class="question-mark">?</span>;
+    <span class="kw">let</span> <span class="ident">constant_pool</span> <span class="op">=</span> <span class="ident">read_constant_pool</span>(<span class="ident">file</span>).<span class="ident">context</span>(<span class="ident">READ_CONSTANT_POOL</span>)<span class="question-mark">?</span>;
 
-    <span class="kw">let</span> <span class="ident">access_flags</span> <span class="op">=</span> <span class="ident">read_u16</span>(<span class="ident">file</span>)<span class="question-mark">?</span>;
-    <span class="kw">let</span> <span class="ident">this_class</span> <span class="op">=</span> <span class="ident">read_u16</span>(<span class="ident">file</span>)<span class="question-mark">?</span>;
-    <span class="kw">let</span> <span class="ident">super_class</span> <span class="op">=</span> <span class="ident">read_u16</span>(<span class="ident">file</span>)<span class="question-mark">?</span>;
+    <span class="kw">let</span> <span class="ident">access_flags</span>  <span class="op">=</span> <span class="ident">read_u16</span>(<span class="ident">file</span>).<span class="ident">context</span>(<span class="ident">READ_ACCESS_FLAGS</span>)<span class="question-mark">?</span>;
+    <span class="kw">let</span> <span class="ident">this_class</span>    <span class="op">=</span> <span class="ident">read_u16</span>(<span class="ident">file</span>).<span class="ident">context</span>(<span class="ident">READ_THIS_CLASS</span>)<span class="question-mark">?</span>;
+    <span class="kw">let</span> <span class="ident">super_class</span>   <span class="op">=</span> <span class="ident">read_u16</span>(<span class="ident">file</span>).<span class="ident">context</span>(<span class="ident">READ_SUPER_CLASS</span>)<span class="question-mark">?</span>;
 
-    <span class="kw">let</span> <span class="ident">interfaces</span> <span class="op">=</span> <span class="ident">read_interfaces</span>(<span class="ident">file</span>)<span class="question-mark">?</span>;
-    <span class="kw">let</span> <span class="ident">fields</span> <span class="op">=</span> <span class="ident">read_fields</span>(<span class="ident">file</span>)<span class="question-mark">?</span>;
-    <span class="kw">let</span> <span class="ident">methods</span> <span class="op">=</span> <span class="ident">read_methods</span>(<span class="ident">file</span>)<span class="question-mark">?</span>;
-    <span class="kw">let</span> <span class="ident">attributes</span> <span class="op">=</span> <span class="ident">read_attributes</span>(<span class="ident">file</span>)<span class="question-mark">?</span>;
+    <span class="kw">let</span> <span class="ident">interfaces</span>    <span class="op">=</span> <span class="ident">read_interfaces</span>(<span class="ident">file</span>).<span class="ident">context</span>(<span class="ident">READ_INTERFACES</span>)<span class="question-mark">?</span>;
+    <span class="kw">let</span> <span class="ident">fields</span>        <span class="op">=</span> <span class="ident">read_fields</span>(<span class="ident">file</span>).<span class="ident">context</span>(<span class="ident">READ_FIELDS</span>)<span class="question-mark">?</span>;
+    <span class="kw">let</span> <span class="ident">methods</span>       <span class="op">=</span> <span class="ident">read_methods</span>(<span class="ident">file</span>).<span class="ident">context</span>(<span class="ident">READ_METHODS</span>)<span class="question-mark">?</span>;
+    <span class="kw">let</span> <span class="ident">attributes</span>    <span class="op">=</span> <span class="ident">read_attributes</span>(<span class="ident">file</span>).<span class="ident">context</span>(<span class="ident">READ_ATTRIBUTES</span>)<span class="question-mark">?</span>;
 
     <span class="kw">let</span> <span class="ident">access_flags</span> <span class="op">=</span> <span class="ident">promote_result_to_io</span>(
         <span class="ident">ClassAccess</span>::<span class="ident">from_access_flags</span>(<span class="ident">access_flags</span>)
@@ -373,6 +408,7 @@
     <span class="prelude-val">Ok</span>(<span class="ident">bytes</span>)
 }
 
+<span class="attribute">#[<span class="ident">allow</span>(<span class="ident">clippy</span>::<span class="ident">vec_box</span>)]</span>
 <span class="kw">fn</span> <span class="ident">read_constant_pool</span><span class="op">&lt;</span><span class="ident">R</span>: <span class="ident">Read</span><span class="op">&gt;</span>(<span class="ident">file</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">R</span>) <span class="op">-&gt;</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="ident">ConstantPoolEntry</span><span class="op">&gt;&gt;</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">constant_pool_count</span> <span class="op">=</span> <span class="ident">i32</span>::<span class="ident">from</span>(<span class="ident">read_u16</span>(<span class="ident">file</span>)<span class="question-mark">?</span>);
 
@@ -395,6 +431,8 @@
             <span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">read_constant_utf8</span>(<span class="ident">file</span>)<span class="question-mark">?</span>),
         <span class="ident">CONSTANT_TAG_CLASS</span> <span class="op">=&gt;</span>
             <span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">read_constant_class</span>(<span class="ident">file</span>)<span class="question-mark">?</span>),
+        <span class="ident">CONSTANT_TAG_STRING</span> <span class="op">=&gt;</span>
+            <span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">read_constant_string</span>(<span class="ident">file</span>)<span class="question-mark">?</span>),
         <span class="ident">CONSTANT_TAG_FIELDREF</span> <span class="op">=&gt;</span>
             <span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">read_constant_fieldref</span>(<span class="ident">file</span>)<span class="question-mark">?</span>),
         <span class="ident">CONSTANT_TAG_METHODREF</span> <span class="op">=&gt;</span>
@@ -425,6 +463,14 @@
 
     <span class="prelude-val">Ok</span>(<span class="ident">ConstantPoolEntry</span>::<span class="ident">ConstantClass</span> {
         <span class="ident">name_index</span>,
+    })
+}
+
+<span class="kw">fn</span> <span class="ident">read_constant_string</span><span class="op">&lt;</span><span class="ident">R</span>: <span class="ident">Read</span><span class="op">&gt;</span>(<span class="ident">file</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">R</span>) <span class="op">-&gt;</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">ConstantPoolEntry</span><span class="op">&gt;</span> {
+    <span class="kw">let</span> <span class="ident">string_index</span> <span class="op">=</span> <span class="ident">read_u16</span>(<span class="ident">file</span>)<span class="question-mark">?</span>;
+
+    <span class="prelude-val">Ok</span>(<span class="ident">ConstantPoolEntry</span>::<span class="ident">ConstantString</span> {
+        <span class="ident">string_index</span>,
     })
 }
 

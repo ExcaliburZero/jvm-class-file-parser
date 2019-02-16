@@ -221,11 +221,18 @@
 <span id="221">221</span>
 <span id="222">222</span>
 <span id="223">223</span>
+<span id="224">224</span>
+<span id="225">225</span>
+<span id="226">226</span>
+<span id="227">227</span>
+<span id="228">228</span>
+<span id="229">229</span>
+<span id="230">230</span>
+<span id="231">231</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">collections</span>::<span class="ident">HashSet</span>;
-<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">fs</span>::<span class="ident">File</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">io</span>;
-<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">io</span>::<span class="ident">Read</span>;
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">io</span>::{<span class="ident">Read</span>, <span class="ident">Write</span>};
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">ops</span>::<span class="ident">Deref</span>;
 
 <span class="kw">use</span> <span class="ident">attribute</span>::<span class="kw-2">*</span>;
@@ -234,6 +241,7 @@
 <span class="kw">use</span> <span class="ident">field</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="ident">method</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="ident">parsing</span>;
+<span class="kw">use</span> <span class="ident">writing</span>;
 
 <span class="doccomment">/// A representation of a JVM class file.</span>
 <span class="doccomment">///</span>
@@ -241,7 +249,10 @@
 <span class="doccomment">/// corresponding section of the Java Virtual Machine Specification.</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// https://docs.oracle.com/javase/specs/jvms/se11/html/jvms-4.html</span>
+<span class="attribute">#[<span class="ident">allow</span>(<span class="ident">clippy</span>::<span class="ident">vec_box</span>)]</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Eq</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">PartialEq</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ClassFile</span> {
     <span class="kw">pub</span> <span class="ident">minor_version</span>: <span class="ident">u16</span>,
     <span class="kw">pub</span> <span class="ident">major_version</span>: <span class="ident">u16</span>,
@@ -268,6 +279,10 @@
     <span class="doccomment">/// ```</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from_file</span><span class="op">&lt;</span><span class="ident">R</span>: <span class="ident">Read</span><span class="op">&gt;</span>(<span class="ident">file</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">R</span>) <span class="op">-&gt;</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">ClassFile</span><span class="op">&gt;</span> {
         <span class="ident">parsing</span>::<span class="ident">read_class_file</span>(<span class="ident">file</span>)
+    }
+
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">to_file</span><span class="op">&lt;</span><span class="ident">W</span>: <span class="ident">Write</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">file</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">W</span>) <span class="op">-&gt;</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+        <span class="ident">writing</span>::<span class="ident">write_class_file</span>(<span class="ident">file</span>, <span class="self">self</span>)
     }
 
     <span class="doccomment">/// Returns the name of the class file.</span>
@@ -317,7 +332,7 @@
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_source_file_name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span> {
         <span class="kw">use</span> <span class="ident">ConstantPoolEntry</span>::<span class="kw-2">*</span>;
 
-        <span class="kw">for</span> <span class="kw-2">ref</span> <span class="ident">attr</span> <span class="kw">in</span> <span class="self">self</span>.<span class="ident">attributes</span>.<span class="ident">iter</span>() {
+        <span class="kw">for</span> <span class="ident">attr</span> <span class="kw">in</span> <span class="self">self</span>.<span class="ident">attributes</span>.<span class="ident">iter</span>() {
             <span class="kw">let</span> <span class="ident">name_constant</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">get_constant</span>(<span class="ident">attr</span>.<span class="ident">attribute_name_index</span> <span class="kw">as</span> <span class="ident">usize</span>);
 
             <span class="kw">if</span> <span class="kw">let</span> <span class="ident">ConstantUtf8</span> { <span class="kw-2">ref</span> <span class="ident">string</span> } <span class="op">=</span> <span class="kw-2">*</span><span class="ident">name_constant</span>.<span class="ident">deref</span>() {
@@ -441,6 +456,7 @@
     <span class="doccomment">///     *class_file.get_constant(2).deref()</span>
     <span class="doccomment">/// );</span>
     <span class="doccomment">/// ```</span>
+    <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">clippy</span>::<span class="ident">borrowed_box</span>)]</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_constant</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">index</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="ident">ConstantPoolEntry</span><span class="op">&gt;</span> {
         <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">constant_pool</span>[<span class="ident">index</span> <span class="op">-</span> <span class="number">1</span>]
     }

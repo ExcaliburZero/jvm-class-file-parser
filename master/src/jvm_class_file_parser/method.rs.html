@@ -32,15 +32,17 @@
 <span id="32">32</span>
 <span id="33">33</span>
 <span id="34">34</span>
+<span id="35">35</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">io</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">ops</span>::<span class="ident">Deref</span>;
 
 <span class="kw">use</span> <span class="ident">attribute</span>::<span class="kw-2">*</span>;
-<span class="kw">use</span> <span class="ident">constant_pool</span>::<span class="ident">ConstantPoolEntry</span>;
 <span class="kw">use</span> <span class="ident">class_file</span>::<span class="ident">ClassFile</span>;
 
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Eq</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">PartialEq</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Method</span> {
     <span class="kw">pub</span> <span class="ident">access_flags</span>: <span class="ident">u16</span>,
     <span class="kw">pub</span> <span class="ident">name_index</span>: <span class="ident">u16</span>,

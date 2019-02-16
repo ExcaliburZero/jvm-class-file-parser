@@ -20,8 +20,13 @@
 <span id="20">20</span>
 <span id="21">21</span>
 <span id="22">22</span>
+<span id="23">23</span>
+<span id="24">24</span>
+<span id="25">25</span>
+<span id="26">26</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Eq</span>)]</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">PartialEq</span>)]</span>
 <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">ConstantPoolEntry</span> {
     <span class="ident">ConstantUtf8</span> {
@@ -29,6 +34,9 @@
     },
     <span class="ident">ConstantClass</span> {
         <span class="ident">name_index</span>: <span class="ident">u16</span>,
+    },
+    <span class="ident">ConstantString</span> {
+        <span class="ident">string_index</span>: <span class="ident">u16</span>,
     },
     <span class="ident">ConstantFieldref</span> {
         <span class="ident">class_index</span>: <span class="ident">u16</span>,

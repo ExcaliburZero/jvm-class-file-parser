@@ -94,7 +94,6 @@
 <span id="94">94</span>
 <span id="95">95</span>
 <span id="96">96</span>
-<span id="97">97</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">io</span>;
 
@@ -120,7 +119,6 @@
     <span class="kw">pub</span> <span class="ident">exception_table</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">ExceptionTableEntry</span><span class="op">&gt;</span>,
     <span class="kw">pub</span> <span class="ident">attributes</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Attribute</span><span class="op">&gt;</span>,
 }
-<span class="comment">// TODO: read attributes of code</span>
 
 <span class="kw">impl</span> <span class="ident">Code</span> {
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from_bytes</span>(<span class="ident">bytes</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) <span class="op">-&gt;</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Code</span><span class="op">&gt;</span> {
