@@ -51,7 +51,7 @@ fn write_n_bytes<W: Write>(file: &mut W, bytes: &[u8]) -> io::Result<()> {
     file.write_all(bytes)
 }
 
-fn write_constant_pool<W: Write>(file: &mut W, constant_pool: &Vec<Box<ConstantPoolEntry>>) -> io::Result<()> {
+fn write_constant_pool<W: Write>(file: &mut W, constant_pool: &[Box<ConstantPoolEntry>]) -> io::Result<()> {
     write_u16(file, (constant_pool.len() + 1) as u16)?;
 
     for entry in constant_pool {
@@ -61,6 +61,7 @@ fn write_constant_pool<W: Write>(file: &mut W, constant_pool: &Vec<Box<ConstantP
     Ok(())
 }
 
+#[allow(clippy::borrowed_box)]
 fn write_constant_pool_entry<W: Write>(file: &mut W, entry: &Box<ConstantPoolEntry>) -> io::Result<()> {
     use ConstantPoolEntry::*;
 
@@ -80,70 +81,70 @@ fn write_constant_pool_entry<W: Write>(file: &mut W, entry: &Box<ConstantPoolEnt
 fn write_constant_utf8<W: Write>(file: &mut W, string: &str) -> io::Result<()> {
     let bytes = string.as_bytes();
 
-    write_u8(file, CONSTANT_TAG_UTF8);
-    write_u16(file, bytes.len() as u16);
-    write_n_bytes(file, &bytes);
+    write_u8(file, CONSTANT_TAG_UTF8)?;
+    write_u16(file, bytes.len() as u16)?;
+    write_n_bytes(file, &bytes)?;
 
     Ok(())
 }
 
 fn write_constant_class<W: Write>(file: &mut W, name_index: u16) -> io::Result<()> {
-    write_u8(file, CONSTANT_TAG_CLASS);
-    write_u16(file, name_index);
+    write_u8(file, CONSTANT_TAG_CLASS)?;
+    write_u16(file, name_index)?;
 
     Ok(())
 }
 
 fn write_constant_methodref<W: Write>(file: &mut W, class_index: u16, name_and_type_index: u16) -> io::Result<()> {
-    write_u8(file, CONSTANT_TAG_METHODREF);
-    write_u16(file, class_index);
-    write_u16(file, name_and_type_index);
+    write_u8(file, CONSTANT_TAG_METHODREF)?;
+    write_u16(file, class_index)?;
+    write_u16(file, name_and_type_index)?;
 
     Ok(())
 }
 
 fn write_constant_name_and_type<W: Write>(file: &mut W, name_index: u16, descriptor_index: u16) -> io::Result<()> {
-    write_u8(file, CONSTANT_TAG_NAME_AND_TYPE);
-    write_u16(file, name_index);
-    write_u16(file, descriptor_index);
+    write_u8(file, CONSTANT_TAG_NAME_AND_TYPE)?;
+    write_u16(file, name_index)?;
+    write_u16(file, descriptor_index)?;
 
     Ok(())
 }
 
-fn write_methods<W: Write>(file: &mut W, methods: &Vec<Method>) -> io::Result<()> {
+fn write_methods<W: Write>(file: &mut W, methods: &[Method]) -> io::Result<()> {
     write_u16(file, methods.len() as u16)?;
 
     for method in methods.iter() {
-        write_method(file, method);
+        write_method(file, method)?;
     }
 
     Ok(())
 }
 
 fn write_method<W: Write>(file: &mut W, method: &Method) -> io::Result<()> {
-    write_u16(file, method.access_flags);
-    write_u16(file, method.name_index);
-    write_u16(file, method.descriptor_index);
+    write_u16(file, method.access_flags)?;
+    write_u16(file, method.name_index)?;
+    write_u16(file, method.descriptor_index)?;
 
-    write_attributes(file, &method.attributes);
+    write_attributes(file, &method.attributes)?;
 
     Ok(())
 }
 
-fn write_attributes<W: Write>(file: &mut W, attributes: &Vec<Attribute>) -> io::Result<()> {
+fn write_attributes<W: Write>(file: &mut W, attributes: &[Attribute]) -> io::Result<()> {
     write_u16(file, attributes.len() as u16)?;
 
     for attribute in attributes.iter() {
-        write_attribute(file, attribute);
+        write_attribute(file, attribute)?;
     }
 
     Ok(())
 }
 
 fn write_attribute<W: Write>(file: &mut W, attributes: &Attribute) -> io::Result<()> {
-    write_u16(file, attributes.attribute_name_index);
-    write_u32(file, attributes.info.len() as u32);
-    write_n_bytes(file, &attributes.info);
+    write_u16(file, attributes.attribute_name_index)?;
+    write_u32(file, attributes.info.len() as u32)?;
+    write_n_bytes(file, &attributes.info)?;
 
     Ok(())
 }

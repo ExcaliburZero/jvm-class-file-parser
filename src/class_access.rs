@@ -93,6 +93,7 @@ impl ClassAccess {
         Ok(access)
     }
 
+    #[allow(clippy::wrong_self_convention)]
     pub fn to_access_flags(access_flags: &HashSet<ClassAccess>) -> u16 {
         use ClassAccess::*;
 

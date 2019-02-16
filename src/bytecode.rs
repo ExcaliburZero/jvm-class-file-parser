@@ -28,6 +28,7 @@ const CHECKCAST: u8 = 192;
 /// Specification.
 ///
 /// https://docs.oracle.com/javase/specs/jvms/se11/html/jvms-6.html
+#[allow(non_camel_case_types)]
 #[derive(Debug)]
 #[derive(PartialEq)]
 pub enum Bytecode {
@@ -287,7 +288,6 @@ impl Bytecode {
             New(class) => format!("{:13} #{}", "new", class),
             Athrow => "athrow".to_string(),
             Checkcast(class) => format!("{:13} #{}", "invokespecial", class),
-            _ => panic!(),
         }
     }
 }

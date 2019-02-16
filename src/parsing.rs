@@ -9,7 +9,7 @@ use constant_pool::*;
 use field::*;
 use field_access::*;
 use method::*;
-use util::{Contextable, io_err, promote_result_to_io};
+use util::{Contextable, promote_result_to_io};
 
 const EXPECTED_MAGIC: u32 = 0xCAFE_BABE;
 
@@ -104,6 +104,7 @@ fn read_n_bytes<R: Read>(file: &mut R, length: usize) -> io::Result<Vec<u8>> {
     Ok(bytes)
 }
 
+#[allow(clippy::vec_box)]
 fn read_constant_pool<R: Read>(file: &mut R) -> io::Result<Vec<Box<ConstantPoolEntry>>> {
     let constant_pool_count = i32::from(read_u16(file)?);
 

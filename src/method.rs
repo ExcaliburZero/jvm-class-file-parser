@@ -2,7 +2,6 @@ use std::io;
 use std::ops::Deref;
 
 use attribute::*;
-use constant_pool::ConstantPoolEntry;
 use class_file::ClassFile;
 
 #[derive(Debug)]

@@ -1,5 +1,5 @@
 use std::io;
-use std::io::{Error, ErrorKind, Read};
+use std::io::{Error, ErrorKind};
 
 /// Checks if the given unary flag is set within the given binary encoding of a
 /// list of flags.
@@ -16,12 +16,8 @@ pub fn promote_result_to_io<A>(result: Result<A, String>) -> io::Result<A> {
     }
 }
 
-pub fn io_err(message: String) -> Error {
-    Error::new(ErrorKind::Other, message)
-}
-
-pub fn io_err_str(message: &str) -> Error {
-    Error::new(ErrorKind::Other, message)
+pub fn io_err<S: Into<String>>(message: S) -> Error {
+    Error::new(ErrorKind::Other, message.into())
 }
 
 /// A trait that is used to add a method to Result types to allow a context

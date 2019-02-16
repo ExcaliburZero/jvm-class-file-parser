@@ -58,7 +58,14 @@ fn fun(filepath: &str) {
                 string: "java/lang/Object".to_string(),
             }),
         ],
-        access_flags: HashSet::new(),
+        access_flags: vec![
+            ClassAccess::Public,
+            ClassAccess::Super,
+            ClassAccess::Enum,
+            ClassAccess::Interface,
+            ClassAccess::Module,
+            ClassAccess::Final,
+        ].into_iter().collect(),
         this_class: 2,
         super_class: 3,
         interfaces: vec![],
@@ -92,13 +99,13 @@ fn javap(filepath: &str) {
 
     print_constant_pool(&class_file);
 
-    println!("{}", "{");
+    println!("{{");
 
     for method in class_file.methods.iter() {
         print_method(&class_file, method);
     }
 
-    println!("{}", "}");
+    println!("}}");
 
     if let Some(source_file) = source_file {
         println!("SourceFile: \"{}\"", source_file);
@@ -227,7 +234,6 @@ fn format_constant_pool_entry(
                 )
             )
         },
-        _ => panic!(),
     }
 }
 
