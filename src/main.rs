@@ -47,7 +47,7 @@ fn javap(filepath: &str) {
 
     println!("{{");
 
-    for method in class_file.methods.iter() {
+    for method in &class_file.methods {
         print_method(&class_file, method);
     }
 

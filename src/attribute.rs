@@ -1,4 +1,5 @@
 use std::io;
+use std::io::Write;
 
 use bytecode::*;
 use parsing;
@@ -67,6 +68,38 @@ impl Code {
             exception_table,
             attributes,
         })
+    }
+
+    pub fn to_bytes(&self) -> Vec<u8> {
+        let mut buffer = vec![];
+
+        let max_stack = u16::to_be_bytes(self.max_stack);
+        let max_locals = u16::to_be_bytes(self.max_locals);
+
+        buffer.write_all(&max_stack).unwrap();
+        buffer.write_all(&max_locals).unwrap();
+
+        let mut code: Vec<u8> = self.code.iter()
+            .map(|(_, bytecode)| bytecode)
+            .flat_map(Bytecode::to_bytes)
+            .collect();
+
+        let code_length = u32::to_be_bytes(code.len() as u32);
+
+        buffer.write_all(&code_length).unwrap();
+        buffer.write_all(&mut code).unwrap();
+
+        // TODO: implement writing of execption table and attributes
+        assert!(self.exception_table.len() == 0);
+        assert!(self.attributes.len() == 0);
+
+        let exception_table_length = u16::to_be_bytes(0);
+        let attributes_length = u16::to_be_bytes(0);
+
+        buffer.write_all(&exception_table_length).unwrap();
+        buffer.write_all(&attributes_length).unwrap();
+
+        buffer
     }
 }
 

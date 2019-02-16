@@ -27,3 +27,8 @@ fn parse_and_write(filepath: &str) {
 fn parse_and_write_class_dummy() {
     parse_and_write("classes/Dummy.class");
 }
+
+#[test]
+fn parse_and_write_class_helloworld() {
+    parse_and_write("classes/HelloWorld.class");
+}

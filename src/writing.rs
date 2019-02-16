@@ -11,6 +11,7 @@ const MAGIC: u32 = 0xCAFE_BABE;
 
 const CONSTANT_TAG_UTF8: u8 = 1;
 const CONSTANT_TAG_CLASS: u8 = 7;
+const CONSTANT_TAG_STRING: u8 = 8;
 const CONSTANT_TAG_FIELDREF: u8 = 9;
 const CONSTANT_TAG_METHODREF: u8 = 10;
 const CONSTANT_TAG_NAME_AND_TYPE: u8 = 12;
@@ -68,6 +69,10 @@ fn write_constant_pool_entry<W: Write>(file: &mut W, entry: &Box<ConstantPoolEnt
     match **entry {
         ConstantUtf8 { ref string } => write_constant_utf8(file, &string)?,
         ConstantClass { name_index } => write_constant_class(file, name_index)?,
+        ConstantString { string_index } =>
+            write_constant_string(file, string_index)?,
+        ConstantFieldref { class_index, name_and_type_index } =>
+            write_constant_fieldref(file, class_index, name_and_type_index)?,
         ConstantMethodref { class_index, name_and_type_index } =>
             write_constant_methodref(file, class_index, name_and_type_index)?,
         ConstantNameAndType { name_index, descriptor_index } =>
@@ -91,6 +96,21 @@ fn write_constant_utf8<W: Write>(file: &mut W, string: &str) -> io::Result<()> {
 fn write_constant_class<W: Write>(file: &mut W, name_index: u16) -> io::Result<()> {
     write_u8(file, CONSTANT_TAG_CLASS)?;
     write_u16(file, name_index)?;
+
+    Ok(())
+}
+
+fn write_constant_string<W: Write>(file: &mut W, string_index: u16) -> io::Result<()> {
+    write_u8(file, CONSTANT_TAG_STRING)?;
+    write_u16(file, string_index)?;
+
+    Ok(())
+}
+
+fn write_constant_fieldref<W: Write>(file: &mut W, class_index: u16, name_and_type_index: u16) -> io::Result<()> {
+    write_u8(file, CONSTANT_TAG_FIELDREF)?;
+    write_u16(file, class_index)?;
+    write_u16(file, name_and_type_index)?;
 
     Ok(())
 }

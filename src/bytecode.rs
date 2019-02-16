@@ -251,6 +251,39 @@ impl Bytecode {
         bytecode
     }
 
+    /// Converts the bytecode into a vector of bytes.
+    ///
+    /// ```
+    /// # use jvm_class_file_parser::Bytecode::*;
+    /// #
+    /// assert_eq!(Aconst_null.to_bytes(), vec![1]);
+    /// assert_eq!(Getstatic(2).to_bytes(), vec![178, 0, 2]);
+    /// ```
+    pub fn to_bytes(&self) -> Vec<u8> {
+        use Bytecode::*;
+
+        match self {
+            Aconst_null => vec![ACONST_NULL],
+            Ldc(constant_index) => {
+                let bytes = u8::to_be_bytes(*constant_index);
+
+                vec![LDC, bytes[0]]
+            },
+            Return => vec![RETURN],
+            Getstatic(field) => {
+                let bytes = u16::to_be_bytes(*field);
+
+                vec![GETSTATIC, bytes[0], bytes[1]]
+            },
+            Invokevirtual(method) => {
+                let bytes = u16::to_be_bytes(*method);
+
+                vec![INVOKEVIRTUAL, bytes[0], bytes[1]]
+            },
+            _ => panic!(),
+        }
+    }
+
     /// Converts the bytecode into a String representation.
     ///
     /// Takes in the index of the instruction so that it can be used to display
