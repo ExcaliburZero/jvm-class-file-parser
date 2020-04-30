@@ -32,6 +32,27 @@ impl<A> Contextable for Result<A, io::Error> {
     }
 }
 
+/// Wrapper around a buffer representing a float or double. We can't use `f32`
+/// directly because it doesn't implement `Eq` which we depend on in containing structs.
+#[derive(Debug)]
+#[derive(PartialEq)]
+#[derive(Eq)]
+pub struct FloatBuffer<B: Eq> {
+    pub buf: B,
+}
+
+impl From<&FloatBuffer<[u8; 4]>> for f32 {
+    fn from(float_buf: &FloatBuffer<[u8; 4]>) -> Self {
+        f32::from_be_bytes(float_buf.buf)
+    }
+}
+
+impl From<&FloatBuffer<[u8; 8]>> for f64 {
+    fn from(float_buf: &FloatBuffer<[u8; 8]>) -> Self {
+        f64::from_be_bytes(float_buf.buf)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use util::flag_is_set;
