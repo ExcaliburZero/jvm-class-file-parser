@@ -23,6 +23,7 @@ const CONSTANT_TAG_CLASS: u8 = 7;
 const CONSTANT_TAG_STRING: u8 = 8;
 const CONSTANT_TAG_FIELDREF: u8 = 9;
 const CONSTANT_TAG_METHODREF: u8 = 10;
+const CONSTANT_TAG_INTERFACE_METHODREF: u8 = 11;
 const CONSTANT_TAG_NAME_AND_TYPE: u8 = 12;
 
 const READ_MINOR_VERSION: &str = "Failed to read minor version.";
@@ -168,6 +169,8 @@ fn read_constant_pool_entry<R: Read>(file: &mut R) -> io::Result<Box<ConstantPoo
             Box::new(read_constant_fieldref(file)?),
         CONSTANT_TAG_METHODREF =>
             Box::new(read_constant_methodref(file)?),
+        CONSTANT_TAG_INTERFACE_METHODREF =>
+            Box::new(read_constant_interface_methodref(file)?),
         CONSTANT_TAG_NAME_AND_TYPE =>
             Box::new(read_constant_name_and_type(file)?),
         _ => panic!("Encountered unknown type of constant pool entry with a tag of: {}", tag),
@@ -256,6 +259,16 @@ fn read_constant_methodref<R: Read>(file: &mut R) -> io::Result<ConstantPoolEntr
     let name_and_type_index = read_cp_index(file)?;
 
     Ok(ConstantPoolEntry::ConstantMethodref {
+        class_index,
+        name_and_type_index,
+    })
+}
+
+fn read_constant_interface_methodref<R: Read>(file: &mut R) -> io::Result<ConstantPoolEntry> {
+    let class_index = read_u16(file)?;
+    let name_and_type_index = read_u16(file)?;
+
+    Ok(ConstantPoolEntry::ConstantInterfaceMethodref {
         class_index,
         name_and_type_index,
     })

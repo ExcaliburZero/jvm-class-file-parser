@@ -36,6 +36,10 @@ pub enum ConstantPoolEntry {
         class_index: ConstantPoolIndex,
         name_and_type_index: ConstantPoolIndex,
     },
+    ConstantInterfaceMethodref {
+        class_index: u16,
+        name_and_type_index: u16,
+    },
     ConstantNameAndType {
         name_index: ConstantPoolIndex,
         descriptor_index: ConstantPoolIndex,

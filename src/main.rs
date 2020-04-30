@@ -198,6 +198,20 @@ fn format_constant_pool_entry(
                 )
             )
         },
+        ConstantInterfaceMethodref { class_index, name_and_type_index } => {
+            format!(
+                "{:<20}{:<16}// {}",
+                "InterfaceMethodref",
+                format!("#{}.#{}", class_index, name_and_type_index),
+                format!(
+                    "{}.{}",
+                    class_file.get_constant_class_str(class_index as usize),
+                    class_file.get_constant_name_and_type_str(
+                        name_and_type_index as usize
+                    ),
+                )
+            )
+        },
         ConstantNameAndType { name_index, descriptor_index } => {
             format!(
                 "{:<20}{:<16}// {}",
