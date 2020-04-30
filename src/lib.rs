@@ -1,4 +1,3 @@
-#![feature(try_from)]
 //! This is a (partially implemented) Rust library and program for parsing JVM class files.
 //!
 //! ```

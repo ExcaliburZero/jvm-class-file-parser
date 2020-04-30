@@ -201,20 +201,25 @@ fn print_method(class_file: &ClassFile, method: &Method) {
         "    flags: TODO",
     );
 
-    let code = method.get_code(class_file).unwrap().unwrap();
+    let code_opt = method.get_code(class_file).unwrap();
 
-    println!("    Code:");
-    println!(
-        "      stack={}, locals={}, args_size={}",
-        code.max_stack,
-        code.max_locals,
-        "TODO"
-    );
+    match code_opt {
+        Some(code) => {
+            println!("    Code:");
+            println!(
+                "      stack={}, locals={}, args_size={}",
+                code.max_stack,
+                code.max_locals,
+                "TODO"
+            );
 
-    print_bytecode(class_file, &code.code);
+            print_bytecode(class_file, &code.code);
 
-    if !code.exception_table.is_empty() {
-        print_exception_table(class_file, &code.exception_table);
+            if !code.exception_table.is_empty() {
+                print_exception_table(class_file, &code.exception_table);
+            }
+        },
+        _ => {}
     }
 }
 
@@ -271,5 +276,10 @@ mod tests {
     #[test]
     fn javap_helloworld_runs_without_error() {
         javap("classes/HelloWorld.class");
+    }
+
+    #[test]
+    fn javap_interface_runs_without_error() {
+        javap("classes/Interface.class");
     }
 }
