@@ -136,6 +136,8 @@ fn parse_class_constant_values() {
     let mut file = File::open("classes/ConstantValues.class").unwrap();
     let class_file = ClassFile::from_file(&mut file).unwrap();
 
+    assert_eq!(40, class_file.constant_pool.len());
+
     match class_file.get_constant(2).deref() {
         ConstantPoolEntry::ConstantInteger { val } => {
             assert_eq!(65535, *val)

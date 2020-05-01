@@ -111,11 +111,12 @@ fn read_n_bytes<R: Read>(file: &mut R, length: usize) -> io::Result<Vec<u8>> {
 
 #[allow(clippy::vec_box)]
 fn read_constant_pool<R: Read>(file: &mut R) -> io::Result<Vec<Box<ConstantPoolEntry>>> {
-    let mut constant_pool_count = read_u16(file)? - 1;
+    let constant_pool_count = read_u16(file)? - 1;
 
     let mut constant_pool = Vec::<Box<ConstantPoolEntry>>::with_capacity(constant_pool_count as usize);
 
-    while constant_pool_count > 0 {
+    let mut idx = 0;
+    while idx < constant_pool_count {
         let entry = read_constant_pool_entry(file)?;
 
         constant_pool.push(entry);
@@ -130,12 +131,12 @@ fn read_constant_pool<R: Read>(file: &mut R) -> io::Result<Vec<Box<ConstantPoolE
             ConstantPoolEntry::ConstantLong { val: _ } | ConstantPoolEntry::ConstantDouble { val: _ } => {
                 // we need this ensure proper indexes of all other entries
                 constant_pool.push(Box::new(ConstantPoolEntry::ConstantEmptySlot {}));
-                constant_pool_count = constant_pool_count - 1
+                idx = idx + 1
             },
             _ => {},
         }
 
-        constant_pool_count = constant_pool_count - 1
+        idx = idx + 1
     }
 
     Ok(constant_pool)
