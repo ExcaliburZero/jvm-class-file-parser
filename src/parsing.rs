@@ -9,11 +9,16 @@ use constant_pool::*;
 use field::*;
 use field_access::*;
 use method::*;
-use util::{Contextable, promote_result_to_io};
+use util::{Contextable, promote_result_to_io, FloatBuffer};
+use std::ops::Deref;
 
 const EXPECTED_MAGIC: u32 = 0xCAFE_BABE;
 
 const CONSTANT_TAG_UTF8: u8 = 1;
+const CONSTANT_TAG_INTEGER: u8 = 3;
+const CONSTANT_TAG_FLOAT: u8 = 4;
+const CONSTANT_TAG_LONG: u8 = 5;
+const CONSTANT_TAG_DOUBLE: u8 = 6;
 const CONSTANT_TAG_CLASS: u8 = 7;
 const CONSTANT_TAG_STRING: u8 = 8;
 const CONSTANT_TAG_FIELDREF: u8 = 9;
@@ -106,14 +111,32 @@ fn read_n_bytes<R: Read>(file: &mut R, length: usize) -> io::Result<Vec<u8>> {
 
 #[allow(clippy::vec_box)]
 fn read_constant_pool<R: Read>(file: &mut R) -> io::Result<Vec<Box<ConstantPoolEntry>>> {
-    let constant_pool_count = i32::from(read_u16(file)?);
+    let constant_pool_count = read_u16(file)? - 1;
 
-    let mut constant_pool = Vec::<Box<ConstantPoolEntry>>::new();
+    let mut constant_pool = Vec::<Box<ConstantPoolEntry>>::with_capacity(constant_pool_count as usize);
 
-    for _ in 0..(constant_pool_count - 1) {
+    let mut idx = 0;
+    while idx < constant_pool_count {
         let entry = read_constant_pool_entry(file)?;
 
         constant_pool.push(entry);
+
+        // from https://docs.oracle.com/javase/specs/jvms/se11/html/jvms-4.html#jvms-4.4.5
+        // All 8-byte constants take up two entries in the constant_pool table of the class file.
+        // If a CONSTANT_Long_info or CONSTANT_Double_info structure is the entry at index n in the
+        // constant_pool table, then the next usable entry in the table is located at index n+2. The
+        // constant_pool index n+1 must be valid but is considered unusable.
+        // (we could abstract this slightly by placing the structure constraint in the enum)
+        match constant_pool.get(constant_pool.len() - 1).unwrap().deref() {
+            ConstantPoolEntry::ConstantLong { val: _ } | ConstantPoolEntry::ConstantDouble { val: _ } => {
+                // we need this ensure proper indexes of all other entries
+                constant_pool.push(Box::new(ConstantPoolEntry::ConstantEmptySlot {}));
+                idx = idx + 1
+            },
+            _ => {},
+        }
+
+        idx = idx + 1
     }
 
     Ok(constant_pool)
@@ -129,6 +152,14 @@ fn read_constant_pool_entry<R: Read>(file: &mut R) -> io::Result<Box<ConstantPoo
             Box::new(read_constant_class(file)?),
         CONSTANT_TAG_STRING =>
             Box::new(read_constant_string(file)?),
+        CONSTANT_TAG_INTEGER =>
+            Box::new(read_constant_integer(file)?),
+        CONSTANT_TAG_FLOAT =>
+            Box::new(read_constant_float(file)?),
+        CONSTANT_TAG_LONG =>
+            Box::new(read_constant_long(file)?),
+        CONSTANT_TAG_DOUBLE =>
+            Box::new(read_constant_double(file)?),
         CONSTANT_TAG_FIELDREF =>
             Box::new(read_constant_fieldref(file)?),
         CONSTANT_TAG_METHODREF =>
@@ -151,6 +182,42 @@ fn read_constant_utf8<R: Read>(file: &mut R) -> io::Result<ConstantPoolEntry> {
 
     Ok(ConstantPoolEntry::ConstantUtf8 {
         string,
+    })
+}
+
+fn read_constant_integer<R: Read>(file: &mut R) -> io::Result<ConstantPoolEntry> {
+    let mut buffer = [0; 4];
+    file.read_exact(&mut buffer)?;
+
+    Ok(ConstantPoolEntry::ConstantInteger {
+        val: i32::from_be_bytes(buffer)
+    })
+}
+
+fn read_constant_float<R: Read>(file: &mut R) -> io::Result<ConstantPoolEntry> {
+    let mut buffer = [0; 4];
+    file.read_exact(&mut buffer)?;
+
+    Ok(ConstantPoolEntry::ConstantFloat {
+        val: FloatBuffer { buf: buffer }
+    })
+}
+
+fn read_constant_long<R: Read>(file: &mut R) -> io::Result<ConstantPoolEntry> {
+    let mut buffer = [0; 8];
+    file.read_exact(&mut buffer)?;
+
+    Ok(ConstantPoolEntry::ConstantLong {
+        val: i64::from_be_bytes(buffer)
+    })
+}
+
+fn read_constant_double<R: Read>(file: &mut R) -> io::Result<ConstantPoolEntry> {
+    let mut buffer = [0; 8];
+    file.read_exact(&mut buffer)?;
+
+    Ok(ConstantPoolEntry::ConstantDouble {
+        val: FloatBuffer { buf: buffer }
     })
 }
 

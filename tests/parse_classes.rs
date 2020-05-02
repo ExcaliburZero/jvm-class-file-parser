@@ -3,9 +3,8 @@ extern crate jvm_class_file_parser;
 use std::collections::HashSet;
 use std::fs::File;
 
-use jvm_class_file_parser::{
-    Attribute, Bytecode, ClassAccess, ClassFile, Code, Field, FieldAccess
-};
+use jvm_class_file_parser::{Attribute, Bytecode, ClassAccess, ClassFile, Code, Field, FieldAccess, ConstantPoolEntry};
+use std::ops::Deref;
 
 #[test]
 fn parse_class_dummy() {
@@ -130,4 +129,57 @@ fn parse_class_intbox() {
         }),
        get_value_code.unwrap()
     );
+}
+
+#[test]
+fn parse_class_constant_values() {
+    let mut file = File::open("classes/ConstantValues.class").unwrap();
+    let class_file = ClassFile::from_file(&mut file).unwrap();
+
+    assert_eq!(40, class_file.constant_pool.len());
+
+    match class_file.get_constant(2).deref() {
+        ConstantPoolEntry::ConstantInteger { val } => {
+            assert_eq!(65535, *val)
+        },
+        _ => {
+            panic!("Expected an integer")
+        }
+    }
+
+    match class_file.get_constant(4).deref() {
+        ConstantPoolEntry::ConstantFloat { ref val } => {
+            assert_eq!(42.0 as f32, val.into())
+        },
+        _ => {
+            panic!("Expected a float")
+        }
+    }
+
+    match class_file.get_constant(6).deref() {
+        ConstantPoolEntry::ConstantLong { val } => {
+            assert_eq!(42, *val)
+        },
+        _ => {
+            panic!("Expected a long")
+        }
+    }
+
+    match class_file.get_constant(9).deref() {
+        ConstantPoolEntry::ConstantDouble { ref val } => {
+            assert_eq!(-1 as f64, val.into())
+        },
+        _ => {
+            panic!("Expected a double")
+        }
+    }
+
+    match class_file.get_constant(37).deref() {
+        ConstantPoolEntry::ConstantUtf8 { ref string } => {
+            assert_eq!("fourty two".to_string(), *string)
+        },
+        _ => {
+            panic!("Expected a utf8 string")
+        }
+    }
 }

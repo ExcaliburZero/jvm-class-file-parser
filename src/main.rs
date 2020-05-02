@@ -13,7 +13,7 @@ use jvm_class_file_parser::{
     Method
 };
 
-const CONSTURCTOR_NAME: &str = "<init>";
+const CONSTRUCTOR_NAME: &str = "<init>";
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -140,6 +140,36 @@ fn format_constant_pool_entry(
                 class_file.get_constant_utf8(string_index as usize)
             )
         },
+        ConstantInteger { ref val } => {
+            format!(
+                "{:<20}{:<16}",
+                "Integer",
+                format!("={}", val)
+            )
+        },
+        ConstantFloat { ref val } => {
+            let as_f32: f32 = val.into();
+            format!(
+                "{:<20}{:<16}",
+                "Float",
+                format!("={}", as_f32)
+            )
+        },
+        ConstantLong { val } => {
+            format!(
+                "{:<20}{:<16}",
+                "Long",
+                format!("={}", val)
+            )
+        },
+        ConstantDouble { ref val } => {
+            let as_f64: f64 = val.into();
+            format!(
+                "{:<20}{:<16}",
+                "Double",
+                format!("={}", as_f64)
+            )
+        },
         ConstantFieldref { class_index, name_and_type_index } => {
             format!(
                 "{:<20}{:<16}// {}",
@@ -180,6 +210,9 @@ fn format_constant_pool_entry(
                 )
             )
         },
+        ConstantEmptySlot {} => {
+            "<empty slot>".to_string()
+        },
     }
 }
 
@@ -188,7 +221,7 @@ fn print_method(class_file: &ClassFile, method: &Method) {
 
     println!(
         "  {}();",
-        if method_name == CONSTURCTOR_NAME { class_file.get_class_name() }
+        if method_name == CONSTRUCTOR_NAME { class_file.get_class_name() }
             else { method_name }
     );
 
@@ -223,7 +256,7 @@ fn print_method(class_file: &ClassFile, method: &Method) {
     }
 }
 
-fn print_bytecode(class_file: &ClassFile, code: &[(usize, Bytecode)]) {
+fn print_bytecode(_class_file: &ClassFile, code: &[(usize, Bytecode)]) {
     for (i, bytecode) in code {
         print!(
             "        {:>3}: {:35}",
