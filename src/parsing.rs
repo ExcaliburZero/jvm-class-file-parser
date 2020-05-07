@@ -25,6 +25,12 @@ const CONSTANT_TAG_FIELDREF: u8 = 9;
 const CONSTANT_TAG_METHODREF: u8 = 10;
 const CONSTANT_TAG_INTERFACE_METHODREF: u8 = 11;
 const CONSTANT_TAG_NAME_AND_TYPE: u8 = 12;
+const CONSTANT_METHOD_HANDLE: u8 = 15;
+const CONSTANT_METHOD_TYPE: u8 = 16;
+const CONSTANT_DYNAMIC: u8 = 17;
+const CONSTANT_INVOKE_DYNAMIC: u8 = 18;
+const CONSTANT_MODULE: u8 = 19;
+const CONSTANT_PACKAGE: u8 = 20;
 
 const READ_MINOR_VERSION: &str = "Failed to read minor version.";
 const READ_MAJOR_VERSION: &str = "Failed to read major version.";
@@ -173,6 +179,18 @@ fn read_constant_pool_entry<R: Read>(file: &mut R) -> io::Result<Box<ConstantPoo
             Box::new(read_constant_interface_methodref(file)?),
         CONSTANT_TAG_NAME_AND_TYPE =>
             Box::new(read_constant_name_and_type(file)?),
+        CONSTANT_METHOD_HANDLE =>
+            Box::new(read_method_handle(file)?),
+        CONSTANT_METHOD_TYPE =>
+            Box::new(read_method_type(file)?),
+        CONSTANT_DYNAMIC =>
+            Box::new(read_dynamic(file)?),
+        CONSTANT_INVOKE_DYNAMIC =>
+            Box::new(read_invoke_dynamic(file)?),
+        CONSTANT_MODULE =>
+            Box::new(read_module(file)?),
+        CONSTANT_PACKAGE =>
+            Box::new(read_package(file)?),
         _ => panic!("Encountered unknown type of constant pool entry with a tag of: {}", tag),
     };
 
@@ -384,4 +402,52 @@ fn read_attribute<R: Read>(file: &mut R) -> io::Result<Attribute> {
         attribute_name_index,
         info,
     })
+}
+
+fn read_method_handle<R: Read>(file: &mut R) -> io::Result<ConstantPoolEntry> {
+    let reference_kind = read_u8(file)?;
+    let reference_index = read_u16(file)?;
+
+    Ok(ConstantPoolEntry::ConstantMethodHandle {
+        reference_kind,
+        reference_index,
+    })
+}
+
+fn read_method_type<R: Read>(file: &mut R) -> io::Result<ConstantPoolEntry> {
+    let descriptor_index = read_u16(file)?;
+
+    Ok(ConstantPoolEntry::ConstantMethodType { descriptor_index })
+}
+
+fn read_dynamic<R: Read>(file: &mut R) -> io::Result<ConstantPoolEntry> {
+    let bootstrap_method_attr_index = read_u16(file)?;
+    let name_and_type_index = read_u16(file)?;
+
+    Ok(ConstantPoolEntry::ConstantDynamic {
+        bootstrap_method_attr_index,
+        name_and_type_index,
+    })
+}
+
+fn read_invoke_dynamic<R: Read>(file: &mut R) -> io::Result<ConstantPoolEntry> {
+    let bootstrap_method_attr_index = read_u16(file)?;
+    let name_and_type_index = read_u16(file)?;
+
+    Ok(ConstantPoolEntry::ConstantInvokeDynamic {
+        bootstrap_method_attr_index,
+        name_and_type_index,
+    })
+}
+
+fn read_module<R: Read>(file: &mut R) -> io::Result<ConstantPoolEntry> {
+    let name_index = read_u16(file)?;
+
+    Ok(ConstantPoolEntry::ConstantModule { name_index })
+}
+
+fn read_package<R: Read>(file: &mut R) -> io::Result<ConstantPoolEntry> {
+    let name_index = read_u16(file)?;
+
+    Ok(ConstantPoolEntry::ConstantPackage { name_index })
 }

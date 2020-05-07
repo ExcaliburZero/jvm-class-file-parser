@@ -224,6 +224,37 @@ fn format_constant_pool_entry(
                 )
             )
         },
+        ConstantMethodHandle { reference_kind, reference_index, } => {
+            format!(
+                "{:<20}{:<16}",
+                "MethodHandle",
+                format!("#{}:#{}", reference_kind, reference_index)
+            )
+        },
+        ConstantMethodType { descriptor_index } => {
+            format!(
+                "{:<20}{:<16}// {}",
+                "MethodType",
+                descriptor_index,
+                class_file.get_constant_utf8(descriptor_index as usize)
+            )
+        },
+        ConstantDynamic { bootstrap_method_attr_index, name_and_type_index, } => {
+            // TODO : !!!!!
+            format!("")
+        },
+        ConstantInvokeDynamic { bootstrap_method_attr_index, name_and_type_index, } => {
+            // TODO : !!!!!
+            format!("")
+        },
+        ConstantModule { name_index } => {
+            // TODO : !!!!!
+            format!("")
+        },
+        ConstantPackage { name_index } => {
+            // TODO : !!!!!
+            format!("")
+        },
         ConstantEmptySlot {} => {
             "<empty slot>".to_string()
         },
