@@ -20,10 +20,10 @@ fn main() {
 
     let filepath = &args[1];
 
-    javap(filepath);
+    javap(filepath, false);
 }
 
-fn javap(filepath: &str) {
+fn javap(filepath: &str, print_code: bool) {
     let mut file = File::open(filepath).unwrap();
     let class_file = ClassFile::from_file(&mut file).unwrap();
 
@@ -48,7 +48,7 @@ fn javap(filepath: &str) {
     println!("{{");
 
     for method in class_file.methods.iter() {
-        print_method(&class_file, method);
+        print_method(&class_file, method, print_code);
     }
 
     println!("}}");
@@ -261,7 +261,7 @@ fn format_constant_pool_entry(
     }
 }
 
-fn print_method(class_file: &ClassFile, method: &Method) {
+fn print_method(class_file: &ClassFile, method: &Method, print_code: bool) {
     let method_name = class_file.get_constant_utf8(method.name_index as usize);
 
     println!(
@@ -279,25 +279,27 @@ fn print_method(class_file: &ClassFile, method: &Method) {
         "    flags: TODO",
     );
 
-    let code_opt = method.get_code(class_file).unwrap();
+    if print_code {
+        let code_opt = method.get_code(class_file).unwrap();
 
-    match code_opt {
-        Some(code) => {
-            println!("    Code:");
-            println!(
-                "      stack={}, locals={}, args_size={}",
-                code.max_stack,
-                code.max_locals,
-                "TODO"
-            );
+        match code_opt {
+            Some(code) => {
+                println!("    Code:");
+                println!(
+                    "      stack={}, locals={}, args_size={}",
+                    code.max_stack,
+                    code.max_locals,
+                    "TODO"
+                );
 
-            print_bytecode(class_file, &code.code);
+                print_bytecode(class_file, &code.code);
 
-            if !code.exception_table.is_empty() {
-                print_exception_table(class_file, &code.exception_table);
-            }
-        },
-        _ => {}
+                if !code.exception_table.is_empty() {
+                    print_exception_table(class_file, &code.exception_table);
+                }
+            },
+            _ => {}
+        }
     }
 }
 
@@ -338,26 +340,26 @@ mod tests {
 
     #[test]
     fn javap_dummy_runs_without_error() {
-        javap("classes/Dummy.class");
+        javap("classes/Dummy.class", true);
     }
 
     #[test]
     fn javap_intbox_runs_without_error() {
-        javap("classes/IntBox.class");
+        javap("classes/IntBox.class", true);
     }
 
     #[test]
     fn javap_exceptionthrows_runs_without_error() {
-        javap("classes/ExceptionThrows.class");
+        javap("classes/ExceptionThrows.class", true);
     }
 
     #[test]
     fn javap_helloworld_runs_without_error() {
-        javap("classes/HelloWorld.class");
+        javap("classes/HelloWorld.class", true);
     }
 
     #[test]
     fn javap_interface_runs_without_error() {
-        javap("classes/Interface.class");
+        javap("classes/Interface.class", true);
     }
 }
