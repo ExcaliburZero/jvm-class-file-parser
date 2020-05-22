@@ -1,5 +1,8 @@
 use util::FloatBuffer;
 
+/// Index into the constant pool "table"
+pub type ConstantPoolIndex = usize;
+
 #[derive(Debug)]
 #[derive(Eq)]
 #[derive(PartialEq)]
@@ -20,22 +23,22 @@ pub enum ConstantPoolEntry {
         val: FloatBuffer<[u8; 8]>,
     },
     ConstantClass {
-        name_index: u16,
+        name_index: ConstantPoolIndex,
     },
     ConstantString {
-        string_index: u16,
+        string_index: ConstantPoolIndex,
     },
     ConstantFieldref {
-        class_index: u16,
-        name_and_type_index: u16,
+        class_index: ConstantPoolIndex,
+        name_and_type_index: ConstantPoolIndex,
     },
     ConstantMethodref {
-        class_index: u16,
-        name_and_type_index: u16,
+        class_index: ConstantPoolIndex,
+        name_and_type_index: ConstantPoolIndex,
     },
     ConstantNameAndType {
-        name_index: u16,
-        descriptor_index: u16,
+        name_index: ConstantPoolIndex,
+        descriptor_index: ConstantPoolIndex,
     },
     // represents an empty slot in the constant pool table
     ConstantEmptySlot { },

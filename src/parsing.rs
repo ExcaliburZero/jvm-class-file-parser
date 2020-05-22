@@ -93,6 +93,10 @@ fn read_u16<R: Read>(file: &mut R) -> io::Result<u16> {
     Ok(u16::from_be_bytes(buffer))
 }
 
+fn read_cp_index<R: Read>(file: &mut R) -> io::Result<ConstantPoolIndex> {
+    read_u16(file).map(ConstantPoolIndex::from)
+}
+
 fn read_u32<R: Read>(file: &mut R) -> io::Result<u32> {
     let mut buffer = [0; 4];
 
@@ -222,7 +226,7 @@ fn read_constant_double<R: Read>(file: &mut R) -> io::Result<ConstantPoolEntry> 
 }
 
 fn read_constant_class<R: Read>(file: &mut R) -> io::Result<ConstantPoolEntry> {
-    let name_index = read_u16(file)?;
+    let name_index = read_cp_index(file)?;
 
     Ok(ConstantPoolEntry::ConstantClass {
         name_index,
@@ -230,7 +234,7 @@ fn read_constant_class<R: Read>(file: &mut R) -> io::Result<ConstantPoolEntry> {
 }
 
 fn read_constant_string<R: Read>(file: &mut R) -> io::Result<ConstantPoolEntry> {
-    let string_index = read_u16(file)?;
+    let string_index = read_cp_index(file)?;
 
     Ok(ConstantPoolEntry::ConstantString {
         string_index,
@@ -238,8 +242,8 @@ fn read_constant_string<R: Read>(file: &mut R) -> io::Result<ConstantPoolEntry> 
 }
 
 fn read_constant_fieldref<R: Read>(file: &mut R) -> io::Result<ConstantPoolEntry> {
-    let class_index = read_u16(file)?;
-    let name_and_type_index = read_u16(file)?;
+    let class_index = read_cp_index(file)?;
+    let name_and_type_index = read_cp_index(file)?;
 
     Ok(ConstantPoolEntry::ConstantFieldref {
         class_index,
@@ -248,8 +252,8 @@ fn read_constant_fieldref<R: Read>(file: &mut R) -> io::Result<ConstantPoolEntry
 }
 
 fn read_constant_methodref<R: Read>(file: &mut R) -> io::Result<ConstantPoolEntry> {
-    let class_index = read_u16(file)?;
-    let name_and_type_index = read_u16(file)?;
+    let class_index = read_cp_index(file)?;
+    let name_and_type_index = read_cp_index(file)?;
 
     Ok(ConstantPoolEntry::ConstantMethodref {
         class_index,
@@ -258,8 +262,8 @@ fn read_constant_methodref<R: Read>(file: &mut R) -> io::Result<ConstantPoolEntr
 }
 
 fn read_constant_name_and_type<R: Read>(file: &mut R) -> io::Result<ConstantPoolEntry> {
-    let name_index = read_u16(file)?;
-    let descriptor_index = read_u16(file)?;
+    let name_index = read_cp_index(file)?;
+    let descriptor_index = read_cp_index(file)?;
 
     Ok(ConstantPoolEntry::ConstantNameAndType {
         name_index,
@@ -297,8 +301,8 @@ fn read_fields<R: Read>(file: &mut R) -> io::Result<Vec<Field>> {
 
 fn read_field<R: Read>(file: &mut R) -> io::Result<Field> {
     let access_flags = read_u16(file)?;
-    let name_index = read_u16(file)?;
-    let descriptor_index = read_u16(file)?;
+    let name_index = read_cp_index(file)?;
+    let descriptor_index = read_cp_index(file)?;
 
     let attributes = read_attributes(file)?;
 
@@ -330,8 +334,8 @@ fn read_methods<R: Read>(file: &mut R) -> io::Result<Vec<Method>> {
 
 fn read_method<R: Read>(file: &mut R) -> io::Result<Method> {
     let access_flags = read_u16(file)?;
-    let name_index = read_u16(file)?;
-    let descriptor_index = read_u16(file)?;
+    let name_index = read_cp_index(file)?;
+    let descriptor_index = read_cp_index(file)?;
 
     let attributes = read_attributes(file)?;
 
@@ -358,7 +362,7 @@ pub fn read_attributes<R: Read>(file: &mut R) -> io::Result<Vec<Attribute>> {
 }
 
 fn read_attribute<R: Read>(file: &mut R) -> io::Result<Attribute> {
-    let attribute_name_index = read_u16(file)?;
+    let attribute_name_index = read_cp_index(file)?;
     let attribute_length = read_u32(file)?;
 
     let info = read_n_bytes(file, attribute_length as usize)?;

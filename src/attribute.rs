@@ -1,7 +1,7 @@
 use std::io;
 
 use bytecode::*;
-use parsing;
+use ::{parsing, ConstantPoolIndex};
 
 const EXCEPTION_ENTRY_LENGTH: usize = 8;
 
@@ -9,7 +9,7 @@ const EXCEPTION_ENTRY_LENGTH: usize = 8;
 #[derive(Eq)]
 #[derive(PartialEq)]
 pub struct Attribute {
-    pub attribute_name_index: u16,
+    pub attribute_name_index: ConstantPoolIndex,
     pub info: Vec<u8>,
 }
 

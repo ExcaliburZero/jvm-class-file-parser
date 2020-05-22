@@ -3,14 +3,15 @@ use std::ops::Deref;
 
 use attribute::*;
 use class_file::ClassFile;
+use ConstantPoolIndex;
 
 #[derive(Debug)]
 #[derive(Eq)]
 #[derive(PartialEq)]
 pub struct Method {
     pub access_flags: u16,
-    pub name_index: u16,
-    pub descriptor_index: u16,
+    pub name_index: ConstantPoolIndex,
+    pub descriptor_index: ConstantPoolIndex,
     pub attributes: Vec<Attribute>,
 }
 

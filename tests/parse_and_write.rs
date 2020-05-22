@@ -7,6 +7,8 @@ use jvm_class_file_parser::{
     ClassFile
 };
 
+/// Round-trip test of a class file where we read the file, then serialize it
+/// and parse it again asserting that the contents are the same
 fn parse_and_write(filepath: &str) {
     let mut file = File::open(filepath).unwrap();
     let class_file = ClassFile::from_file(&mut file).unwrap();
