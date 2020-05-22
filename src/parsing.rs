@@ -58,8 +58,8 @@ pub fn read_class_file<R: Read>(file: &mut R) -> io::Result<ClassFile> {
     let constant_pool = read_constant_pool(file).context(READ_CONSTANT_POOL)?;
 
     let access_flags  = read_u16(file).context(READ_ACCESS_FLAGS)?;
-    let this_class    = read_u16(file).context(READ_THIS_CLASS)?;
-    let super_class   = read_u16(file).context(READ_SUPER_CLASS)?;
+    let this_class    = read_cp_index(file).context(READ_THIS_CLASS)?;
+    let super_class   = read_cp_index(file).context(READ_SUPER_CLASS)?;
 
     let interfaces    = read_interfaces(file).context(READ_INTERFACES)?;
     let fields        = read_fields(file).context(READ_FIELDS)?;
@@ -302,13 +302,13 @@ fn read_constant_name_and_type<R: Read>(file: &mut R) -> io::Result<ConstantPool
     })
 }
 
-fn read_interfaces<R: Read>(file: &mut R) -> io::Result<Vec<u16>> {
+fn read_interfaces<R: Read>(file: &mut R) -> io::Result<Vec<ConstantPoolIndex>> {
     let interfaces_count = i32::from(read_u16(file)?);
 
-    let mut interfaces = Vec::<u16>::new();
+    let mut interfaces = Vec::<_>::new();
 
     for _ in 0..interfaces_count {
-        let entry = read_u16(file)?;
+        let entry = read_cp_index(file)?;
 
         interfaces.push(entry);
     }

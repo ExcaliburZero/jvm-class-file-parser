@@ -24,8 +24,8 @@ pub fn write_class_file<W: Write>(file: &mut W, class_file: &ClassFile) -> io::R
     write_constant_pool(file, &class_file.constant_pool)?;
 
     write_u16(file, ClassAccess::to_access_flags(&class_file.access_flags))?;
-    write_u16(file, class_file.this_class)?;
-    write_u16(file, class_file.super_class)?;
+    write_cp_index(file, class_file.this_class)?;
+    write_cp_index(file, class_file.super_class)?;
 
     write_u16(file, 0)?; // interfaces
     write_u16(file, 0)?; // fields
