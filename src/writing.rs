@@ -59,7 +59,7 @@ fn write_n_bytes<W: Write>(file: &mut W, bytes: &[u8]) -> io::Result<()> {
     file.write_all(bytes)
 }
 
-fn write_constant_pool<W: Write>(file: &mut W, constant_pool: &[Box<ConstantPoolEntry>]) -> io::Result<()> {
+fn write_constant_pool<W: Write>(file: &mut W, constant_pool: &[ConstantPoolEntry]) -> io::Result<()> {
     write_u16(file, (constant_pool.len() + 1) as u16)?;
 
     for entry in constant_pool {
@@ -70,10 +70,10 @@ fn write_constant_pool<W: Write>(file: &mut W, constant_pool: &[Box<ConstantPool
 }
 
 #[allow(clippy::borrowed_box)]
-fn write_constant_pool_entry<W: Write>(file: &mut W, entry: &Box<ConstantPoolEntry>) -> io::Result<()> {
+fn write_constant_pool_entry<W: Write>(file: &mut W, entry: &ConstantPoolEntry) -> io::Result<()> {
     use ConstantPoolEntry::*;
 
-    match **entry {
+    match *entry {
         ConstantUtf8 { ref string } => write_constant_utf8(file, &string)?,
         ConstantClass { name_index } => write_constant_class(file, name_index)?,
         ConstantMethodref { class_index, name_and_type_index } =>

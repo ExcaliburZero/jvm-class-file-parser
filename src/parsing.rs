@@ -121,10 +121,10 @@ fn read_n_bytes<R: Read>(file: &mut R, length: usize) -> io::Result<Vec<u8>> {
 }
 
 #[allow(clippy::vec_box)]
-fn read_constant_pool<R: Read>(file: &mut R) -> io::Result<Vec<Box<ConstantPoolEntry>>> {
+fn read_constant_pool<R: Read>(file: &mut R) -> io::Result<Vec<ConstantPoolEntry>> {
     let constant_pool_count = read_u16(file)? - 1;
 
-    let mut constant_pool = Vec::<Box<ConstantPoolEntry>>::with_capacity(constant_pool_count as usize);
+    let mut constant_pool = Vec::<ConstantPoolEntry>::with_capacity(constant_pool_count as usize);
 
     let mut idx = 0;
     while idx < constant_pool_count {
@@ -141,7 +141,7 @@ fn read_constant_pool<R: Read>(file: &mut R) -> io::Result<Vec<Box<ConstantPoolE
         match constant_pool.get(constant_pool.len() - 1).unwrap().deref() {
             ConstantPoolEntry::ConstantLong { val: _ } | ConstantPoolEntry::ConstantDouble { val: _ } => {
                 // we need this ensure proper indexes of all other entries
-                constant_pool.push(Box::new(ConstantPoolEntry::ConstantEmptySlot {}));
+                constant_pool.push(ConstantPoolEntry::ConstantEmptySlot {});
                 idx = idx + 1
             },
             _ => {},
@@ -153,44 +153,44 @@ fn read_constant_pool<R: Read>(file: &mut R) -> io::Result<Vec<Box<ConstantPoolE
     Ok(constant_pool)
 }
 
-fn read_constant_pool_entry<R: Read>(file: &mut R) -> io::Result<Box<ConstantPoolEntry>> {
+fn read_constant_pool_entry<R: Read>(file: &mut R) -> io::Result<ConstantPoolEntry> {
     let tag = read_u8(file)?;
 
-    let entry: Box<ConstantPoolEntry> = match tag {
+    let entry: ConstantPoolEntry = match tag {
         CONSTANT_TAG_UTF8 =>
-            Box::new(read_constant_utf8(file)?),
+            read_constant_utf8(file)?,
         CONSTANT_TAG_CLASS =>
-            Box::new(read_constant_class(file)?),
+            read_constant_class(file)?,
         CONSTANT_TAG_STRING =>
-            Box::new(read_constant_string(file)?),
+            read_constant_string(file)?,
         CONSTANT_TAG_INTEGER =>
-            Box::new(read_constant_integer(file)?),
+            read_constant_integer(file)?,
         CONSTANT_TAG_FLOAT =>
-            Box::new(read_constant_float(file)?),
+            read_constant_float(file)?,
         CONSTANT_TAG_LONG =>
-            Box::new(read_constant_long(file)?),
+            read_constant_long(file)?,
         CONSTANT_TAG_DOUBLE =>
-            Box::new(read_constant_double(file)?),
+            read_constant_double(file)?,
         CONSTANT_TAG_FIELDREF =>
-            Box::new(read_constant_fieldref(file)?),
+            read_constant_fieldref(file)?,
         CONSTANT_TAG_METHODREF =>
-            Box::new(read_constant_methodref(file)?),
+            read_constant_methodref(file)?,
         CONSTANT_TAG_INTERFACE_METHODREF =>
-            Box::new(read_constant_interface_methodref(file)?),
+            read_constant_interface_methodref(file)?,
         CONSTANT_TAG_NAME_AND_TYPE =>
-            Box::new(read_constant_name_and_type(file)?),
+            read_constant_name_and_type(file)?,
         CONSTANT_METHOD_HANDLE =>
-            Box::new(read_method_handle(file)?),
+            read_method_handle(file)?,
         CONSTANT_METHOD_TYPE =>
-            Box::new(read_method_type(file)?),
+            read_method_type(file)?,
         CONSTANT_DYNAMIC =>
-            Box::new(read_dynamic(file)?),
+            read_dynamic(file)?,
         CONSTANT_INVOKE_DYNAMIC =>
-            Box::new(read_invoke_dynamic(file)?),
+            read_invoke_dynamic(file)?,
         CONSTANT_MODULE =>
-            Box::new(read_module(file)?),
+            read_module(file)?,
         CONSTANT_PACKAGE =>
-            Box::new(read_package(file)?),
+            read_package(file)?,
         _ => panic!("Encountered unknown type of constant pool entry with a tag of: {}", tag),
     };
 

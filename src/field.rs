@@ -7,6 +7,7 @@ use ConstantPoolIndex;
 #[derive(Debug)]
 #[derive(Eq)]
 #[derive(PartialEq)]
+#[derive(Clone)]
 pub struct Field {
     pub access_flags: HashSet<FieldAccess>,
     pub name_index: ConstantPoolIndex,

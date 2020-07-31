@@ -8,6 +8,7 @@ pub type ConstantPoolIndex = usize;
 #[derive(Debug)]
 #[derive(Eq)]
 #[derive(PartialEq)]
+#[derive(Clone)]
 pub enum ConstantPoolEntry {
     ConstantUtf8 {
         string: String,

@@ -24,6 +24,7 @@ pub const METHOD_SYNTHETIC_FLAG: u16 = 0x1000;
 #[derive(Debug)]
 #[derive(Eq)]
 #[derive(PartialEq)]
+#[derive(Clone)]
 pub struct Method {
     pub access_flags: u16,
     pub name_index: ConstantPoolIndex,

@@ -37,6 +37,7 @@ impl<A> Contextable for Result<A, io::Error> {
 #[derive(Debug)]
 #[derive(PartialEq)]
 #[derive(Eq)]
+#[derive(Clone)]
 pub struct FloatBuffer<B: Eq> {
     pub buf: B,
 }

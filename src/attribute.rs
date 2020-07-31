@@ -8,6 +8,7 @@ const EXCEPTION_ENTRY_LENGTH: usize = 8;
 #[derive(Debug)]
 #[derive(Eq)]
 #[derive(PartialEq)]
+#[derive(Clone)]
 pub struct Attribute {
     pub attribute_name_index: ConstantPoolIndex,
     pub info: Vec<u8>,

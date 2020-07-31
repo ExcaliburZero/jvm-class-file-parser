@@ -21,10 +21,11 @@ use writing;
 #[derive(Debug)]
 #[derive(Eq)]
 #[derive(PartialEq)]
+#[derive(Clone)]
 pub struct ClassFile {
     pub minor_version: u16,
     pub major_version: u16,
-    pub constant_pool: Vec<Box<ConstantPoolEntry>>,
+    pub constant_pool: Vec<ConstantPoolEntry>,
     pub access_flags: HashSet<ClassAccess>,
     pub this_class: ConstantPoolIndex,
     pub super_class: ConstantPoolIndex,
@@ -72,7 +73,7 @@ impl ClassFile {
         if let ConstantClass { name_index } = *class.deref() {
             let class_name = self.get_constant(name_index as usize);
 
-            if let ConstantUtf8 { ref string } = *class_name.deref() {
+            if let ConstantUtf8 { string } = class_name {
                 string
             } else {
                 panic!("The \"name_index\" pointed to by \"this_class\" did not point to a ConstantUtf8. Found: {:?}", class_name.deref())
@@ -113,9 +114,9 @@ impl ClassFile {
                     let source_file_index = u16::from_be_bytes(info);
                     let source_constant = self.get_constant(source_file_index as usize);
 
-                    if let ConstantUtf8 { ref string } =
-                        *source_constant.deref() { return Some(string) }
-                    else {
+                    if let ConstantUtf8 { string } = source_constant {
+                        return Some(string)
+                    } else {
                         panic!("The \"info\" of the \"SourceFile\" annotation did not point to a ConstantUtf8. Found: {:?}", source_constant.deref());
                     }
                 }
@@ -141,7 +142,7 @@ impl ClassFile {
 
         let constant_utf8 = self.get_constant(index);
 
-        if let ConstantUtf8 { ref string } = *constant_utf8.deref() {
+        if let ConstantUtf8 { string } = constant_utf8 {
             string
         } else {
             panic!("Failed to get constant \"#{}\" as a ConstantUtf8. Found: {:?}", index, constant_utf8)
@@ -164,8 +165,8 @@ impl ClassFile {
 
         let constant_class = self.get_constant(index);
 
-        if let ConstantClass { name_index } = *constant_class.deref() {
-            self.get_constant_utf8(name_index as usize)
+        if let ConstantClass { name_index } = constant_class {
+            self.get_constant_utf8(*name_index as usize)
         } else {
             panic!("Failed to get constant \"#{}\" as a ConstantClass. Found: {:?}", index, constant_class)
         }
@@ -191,12 +192,11 @@ impl ClassFile {
 
         let constant_nat = self.get_constant(index);
 
-        if let ConstantNameAndType { name_index, descriptor_index } =
-                *constant_nat.deref() {
+        if let ConstantNameAndType { name_index, descriptor_index } = constant_nat {
             format!(
                 "\"{}\":{}",
-                self.get_constant_utf8(name_index as usize),
-                self.get_constant_utf8(descriptor_index as usize),
+                self.get_constant_utf8(*name_index as usize),
+                self.get_constant_utf8(*descriptor_index as usize),
             )
         } else {
             panic!("Failed to get constant \"#{}\" as a ConstantNameAndType. Found: {:?}", index, constant_nat)
@@ -225,7 +225,7 @@ impl ClassFile {
     /// );
     /// ```
     #[allow(clippy::borrowed_box)]
-    pub fn get_constant(&self, index: usize) -> &Box<ConstantPoolEntry> {
+    pub fn get_constant(&self, index: usize) -> &ConstantPoolEntry {
         &self.constant_pool[index - 1]
     }
 }
