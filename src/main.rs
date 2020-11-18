@@ -8,7 +8,9 @@ use std::io;
 use std::ops::Deref;
 use std::path::PathBuf;
 
-use jvm_class_file_parser::{Attribute, Bytecode, ClassAccess, ClassFile, ConstantPoolEntry, ExceptionTableEntry, Method};
+use jvm_class_file_parser::{
+    Attribute, Bytecode, ClassAccess, ClassFile, ConstantPoolEntry, ExceptionTableEntry, Method,
+};
 
 const CONSTRUCTOR_NAME: &str = "<init>";
 
@@ -66,12 +68,11 @@ fn to_absolute_filepath(filepath: &str) -> io::Result<PathBuf> {
 }
 
 fn print_access_flags(access_flags: &HashSet<ClassAccess>) {
-    let mut access_flags = access_flags.iter()
-        .cloned()
-        .collect::<Vec<ClassAccess>>();
+    let mut access_flags = access_flags.iter().cloned().collect::<Vec<ClassAccess>>();
     access_flags.sort();
 
-    let flags_str = access_flags.iter()
+    let flags_str = access_flags
+        .iter()
         .map(access_flag_to_name)
         .collect::<Vec<&str>>()
         .join(", ");
@@ -103,7 +104,7 @@ fn format_attribute(class_file: &ClassFile, attr: &Attribute) -> String {
             // clean this up with u16::from() on a vec slice
             let index = ((attr.info[0] as usize) << 8) + attr.info[1] as usize;
             format!("{} = {:?}", attr_type, class_file.get_constant_utf8(index))
-        },
+        }
         // "SourceDebugExtension" => {},
         // "LineNumberTable" => {},
         // "LocalVariableTable" => {},
@@ -150,153 +151,122 @@ fn print_constant_pool(class_file: &ClassFile) {
     }
 }
 
-fn format_constant_pool_entry(
-        class_file: &ClassFile, constant: &ConstantPoolEntry
-    ) -> String {
+fn format_constant_pool_entry(class_file: &ClassFile, constant: &ConstantPoolEntry) -> String {
     use ConstantPoolEntry::*;
 
     match *constant.deref() {
-        ConstantUtf8 { ref string } => {
-            format!(
-                "{:<20}{}",
-                "Utf8",
-                string
-            )
-        },
-        ConstantClass { name_index } => {
-            format!(
-                "{:<20}{:<16}// {}",
-                "Class",
-                format!("#{}", name_index),
-                class_file.get_constant_utf8(name_index as usize)
-            )
-        },
-        ConstantString { string_index } => {
-            format!(
-                "{:<20}{:<16}// {}",
-                "String",
-                format!("#{}", string_index),
-                class_file.get_constant_utf8(string_index as usize)
-            )
-        },
-        ConstantInteger { ref val } => {
-            format!(
-                "{:<20}{:<16}",
-                "Integer",
-                format!("={}", val)
-            )
-        },
+        ConstantUtf8 { ref string } => format!("{:<20}{}", "Utf8", string),
+        ConstantClass { name_index } => format!(
+            "{:<20}{:<16}// {}",
+            "Class",
+            format!("#{}", name_index),
+            class_file.get_constant_utf8(name_index as usize)
+        ),
+        ConstantString { string_index } => format!(
+            "{:<20}{:<16}// {}",
+            "String",
+            format!("#{}", string_index),
+            class_file.get_constant_utf8(string_index as usize)
+        ),
+        ConstantInteger { ref val } => format!("{:<20}{:<16}", "Integer", format!("={}", val)),
         ConstantFloat { ref val } => {
             let as_f32: f32 = val.into();
-            format!(
-                "{:<20}{:<16}",
-                "Float",
-                format!("={}", as_f32)
-            )
-        },
-        ConstantLong { val } => {
-            format!(
-                "{:<20}{:<16}",
-                "Long",
-                format!("={}", val)
-            )
-        },
+            format!("{:<20}{:<16}", "Float", format!("={}", as_f32))
+        }
+        ConstantLong { val } => format!("{:<20}{:<16}", "Long", format!("={}", val)),
         ConstantDouble { ref val } => {
             let as_f64: f64 = val.into();
+            format!("{:<20}{:<16}", "Double", format!("={}", as_f64))
+        }
+        ConstantFieldref {
+            class_index,
+            name_and_type_index,
+        } => format!(
+            "{:<20}{:<16}// {}",
+            "Fieldref",
+            format!("#{}.#{}", class_index, name_and_type_index),
             format!(
-                "{:<20}{:<16}",
-                "Double",
-                format!("={}", as_f64)
+                "{}.{}",
+                class_file.get_constant_class_str(class_index as usize),
+                class_file.get_constant_name_and_type_str(name_and_type_index as usize),
             )
-        },
-        ConstantFieldref { class_index, name_and_type_index } => {
+        ),
+        ConstantMethodref {
+            class_index,
+            name_and_type_index,
+        } => format!(
+            "{:<20}{:<16}// {}",
+            "Methodref",
+            format!("#{}.#{}", class_index, name_and_type_index),
             format!(
-                "{:<20}{:<16}// {}",
-                "Fieldref",
-                format!("#{}.#{}", class_index, name_and_type_index),
-                format!(
-                    "{}.{}",
-                    class_file.get_constant_class_str(class_index as usize),
-                    class_file.get_constant_name_and_type_str(
-                        name_and_type_index as usize
-                    ),
-                )
+                "{}.{}",
+                class_file.get_constant_class_str(class_index as usize),
+                class_file.get_constant_name_and_type_str(name_and_type_index as usize),
             )
-        },
-        ConstantMethodref { class_index, name_and_type_index } => {
+        ),
+        ConstantInterfaceMethodref {
+            class_index,
+            name_and_type_index,
+        } => format!(
+            "{:<20}{:<16}// {}",
+            "InterfaceMethodref",
+            format!("#{}.#{}", class_index, name_and_type_index),
             format!(
-                "{:<20}{:<16}// {}",
-                "Methodref",
-                format!("#{}.#{}", class_index, name_and_type_index),
-                format!(
-                    "{}.{}",
-                    class_file.get_constant_class_str(class_index as usize),
-                    class_file.get_constant_name_and_type_str(
-                        name_and_type_index as usize
-                    ),
-                )
+                "{}.{}",
+                class_file.get_constant_class_str(class_index as usize),
+                class_file.get_constant_name_and_type_str(name_and_type_index as usize),
             )
-        },
-        ConstantInterfaceMethodref { class_index, name_and_type_index } => {
+        ),
+        ConstantNameAndType {
+            name_index,
+            descriptor_index,
+        } => format!(
+            "{:<20}{:<16}// {}",
+            "NameAndType",
+            format!("#{}:#{}", name_index, descriptor_index),
             format!(
-                "{:<20}{:<16}// {}",
-                "InterfaceMethodref",
-                format!("#{}.#{}", class_index, name_and_type_index),
-                format!(
-                    "{}.{}",
-                    class_file.get_constant_class_str(class_index as usize),
-                    class_file.get_constant_name_and_type_str(
-                        name_and_type_index as usize
-                    ),
-                )
+                "\"{}\":{}",
+                class_file.get_constant_utf8(name_index as usize),
+                class_file.get_constant_utf8(descriptor_index as usize),
             )
-        },
-        ConstantNameAndType { name_index, descriptor_index } => {
-            format!(
-                "{:<20}{:<16}// {}",
-                "NameAndType",
-                format!("#{}:#{}", name_index, descriptor_index),
-                format!(
-                    "\"{}\":{}",
-                    class_file.get_constant_utf8(name_index as usize),
-                    class_file.get_constant_utf8(descriptor_index as usize),
-                )
-            )
-        },
-        ConstantMethodHandle { reference_kind, reference_index, } => {
-            format!(
-                "{:<20}{:<16}",
-                "MethodHandle",
-                format!("#{}:#{}", reference_kind, reference_index)
-            )
-        },
-        ConstantMethodType { descriptor_index } => {
-            format!(
-                "{:<20}{:<16}// {}",
-                "MethodType",
-                descriptor_index,
-                class_file.get_constant_utf8(descriptor_index as usize)
-            )
-        },
-        ConstantDynamic { bootstrap_method_attr_index, name_and_type_index, } => {
+        ),
+        ConstantMethodHandle {
+            reference_kind,
+            reference_index,
+        } => format!(
+            "{:<20}{:<16}",
+            "MethodHandle",
+            format!("#{}:#{}", reference_kind, reference_index)
+        ),
+        ConstantMethodType { descriptor_index } => format!(
+            "{:<20}{:<16}// {}",
+            "MethodType",
+            descriptor_index,
+            class_file.get_constant_utf8(descriptor_index as usize)
+        ),
+        ConstantDynamic {
+            bootstrap_method_attr_index,
+            name_and_type_index,
+        } => {
             // TODO : !!!!!
             format!("")
-        },
-        ConstantInvokeDynamic { bootstrap_method_attr_index, name_and_type_index, } => {
+        }
+        ConstantInvokeDynamic {
+            bootstrap_method_attr_index,
+            name_and_type_index,
+        } => {
             // TODO : !!!!!
             format!("")
-        },
+        }
         ConstantModule { name_index } => {
             // TODO : !!!!!
             format!("")
-        },
+        }
         ConstantPackage { name_index } => {
             // TODO : !!!!!
             format!("")
-        },
-        ConstantEmptySlot {} => {
-            "<empty slot>".to_string()
-        },
+        }
+        ConstantEmptySlot {} => "<empty slot>".to_string(),
     }
 }
 
@@ -305,8 +275,11 @@ fn print_method(class_file: &ClassFile, method: &Method, print_code: bool) {
 
     println!(
         "  {}();",
-        if method_name == CONSTRUCTOR_NAME { class_file.get_class_name() }
-            else { method_name }
+        if method_name == CONSTRUCTOR_NAME {
+            class_file.get_class_name()
+        } else {
+            method_name
+        }
     );
 
     println!(
@@ -314,9 +287,7 @@ fn print_method(class_file: &ClassFile, method: &Method, print_code: bool) {
         class_file.get_constant_utf8(method.descriptor_index as usize)
     );
 
-    println!(
-        "    flags: TODO",
-    );
+    println!("    flags: TODO",);
 
     if print_code {
         let code_opt = method.get_code(class_file).unwrap();
@@ -326,9 +297,7 @@ fn print_method(class_file: &ClassFile, method: &Method, print_code: bool) {
                 println!("    Code:");
                 println!(
                     "      stack={}, locals={}, args_size={}",
-                    code.max_stack,
-                    code.max_locals,
-                    "TODO"
+                    code.max_stack, code.max_locals, "TODO"
                 );
 
                 print_bytecode(class_file, &code.code);
@@ -336,7 +305,7 @@ fn print_method(class_file: &ClassFile, method: &Method, print_code: bool) {
                 if !code.exception_table.is_empty() {
                     print_exception_table(class_file, &code.exception_table);
                 }
-            },
+            }
             _ => {}
         }
     }
@@ -344,11 +313,7 @@ fn print_method(class_file: &ClassFile, method: &Method, print_code: bool) {
 
 fn print_bytecode(_class_file: &ClassFile, code: &[(usize, Bytecode)]) {
     for (i, bytecode) in code {
-        print!(
-            "        {:>3}: {:35}",
-            i,
-            bytecode.to_string(*i as u16)
-        );
+        print!("        {:>3}: {:35}", i, bytecode.to_string(*i as u16));
 
         // TODO: show constants to the side
 
@@ -356,9 +321,7 @@ fn print_bytecode(_class_file: &ClassFile, code: &[(usize, Bytecode)]) {
     }
 }
 
-fn print_exception_table(
-        class_file: &ClassFile, exception_table: &[ExceptionTableEntry]
-    ) {
+fn print_exception_table(class_file: &ClassFile, exception_table: &[ExceptionTableEntry]) {
     println!("      Exception table:");
     println!("         from    to  target type");
 

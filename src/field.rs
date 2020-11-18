@@ -4,10 +4,7 @@ use attribute::*;
 use field_access::*;
 use ConstantPoolIndex;
 
-#[derive(Debug)]
-#[derive(Eq)]
-#[derive(PartialEq)]
-#[derive(Clone)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct Field {
     pub access_flags: HashSet<FieldAccess>,
     pub name_index: ConstantPoolIndex,

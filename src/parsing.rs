@@ -9,8 +9,8 @@ use constant_pool::*;
 use field::*;
 use field_access::*;
 use method::*;
-use util::{Contextable, promote_result_to_io, FloatBuffer};
 use std::ops::Deref;
+use util::{promote_result_to_io, Contextable, FloatBuffer};
 
 const EXPECTED_MAGIC: u32 = 0xCAFE_BABE;
 
@@ -49,7 +49,7 @@ pub fn read_class_file<R: Read>(file: &mut R) -> io::Result<ClassFile> {
     if magic != EXPECTED_MAGIC {
         let error_msg = format!("The given file does not appear to be a valid JVM class file. JVM class files must start with the magic bytes \"CAFEBABE\", but this file started with \"{:x}\"", magic);
 
-        return Err(Error::new(ErrorKind::Other, error_msg))
+        return Err(Error::new(ErrorKind::Other, error_msg));
     }
 
     let minor_version = read_u16(file).context(READ_MINOR_VERSION)?;
@@ -57,18 +57,16 @@ pub fn read_class_file<R: Read>(file: &mut R) -> io::Result<ClassFile> {
 
     let constant_pool = read_constant_pool(file).context(READ_CONSTANT_POOL)?;
 
-    let access_flags  = read_u16(file).context(READ_ACCESS_FLAGS)?;
-    let this_class    = read_cp_index(file).context(READ_THIS_CLASS)?;
-    let super_class   = read_cp_index(file).context(READ_SUPER_CLASS)?;
+    let access_flags = read_u16(file).context(READ_ACCESS_FLAGS)?;
+    let this_class = read_cp_index(file).context(READ_THIS_CLASS)?;
+    let super_class = read_cp_index(file).context(READ_SUPER_CLASS)?;
 
-    let interfaces    = read_interfaces(file).context(READ_INTERFACES)?;
-    let fields        = read_fields(file).context(READ_FIELDS)?;
-    let methods       = read_methods(file).context(READ_METHODS)?;
-    let attributes    = read_attributes(file).context(READ_ATTRIBUTES)?;
+    let interfaces = read_interfaces(file).context(READ_INTERFACES)?;
+    let fields = read_fields(file).context(READ_FIELDS)?;
+    let methods = read_methods(file).context(READ_METHODS)?;
+    let attributes = read_attributes(file).context(READ_ATTRIBUTES)?;
 
-    let access_flags = promote_result_to_io(
-        ClassAccess::from_access_flags(access_flags)
-    )?;
+    let access_flags = promote_result_to_io(ClassAccess::from_access_flags(access_flags))?;
 
     Ok(ClassFile {
         minor_version,
@@ -139,12 +137,13 @@ fn read_constant_pool<R: Read>(file: &mut R) -> io::Result<Vec<ConstantPoolEntry
         // constant_pool index n+1 must be valid but is considered unusable.
         // (we could abstract this slightly by placing the structure constraint in the enum)
         match constant_pool.get(constant_pool.len() - 1).unwrap().deref() {
-            ConstantPoolEntry::ConstantLong { val: _ } | ConstantPoolEntry::ConstantDouble { val: _ } => {
+            ConstantPoolEntry::ConstantLong { val: _ }
+            | ConstantPoolEntry::ConstantDouble { val: _ } => {
                 // we need this ensure proper indexes of all other entries
                 constant_pool.push(ConstantPoolEntry::ConstantEmptySlot {});
                 idx = idx + 1
-            },
-            _ => {},
+            }
+            _ => {}
         }
 
         idx = idx + 1
@@ -157,41 +156,27 @@ fn read_constant_pool_entry<R: Read>(file: &mut R) -> io::Result<ConstantPoolEnt
     let tag = read_u8(file)?;
 
     let entry: ConstantPoolEntry = match tag {
-        CONSTANT_TAG_UTF8 =>
-            read_constant_utf8(file)?,
-        CONSTANT_TAG_CLASS =>
-            read_constant_class(file)?,
-        CONSTANT_TAG_STRING =>
-            read_constant_string(file)?,
-        CONSTANT_TAG_INTEGER =>
-            read_constant_integer(file)?,
-        CONSTANT_TAG_FLOAT =>
-            read_constant_float(file)?,
-        CONSTANT_TAG_LONG =>
-            read_constant_long(file)?,
-        CONSTANT_TAG_DOUBLE =>
-            read_constant_double(file)?,
-        CONSTANT_TAG_FIELDREF =>
-            read_constant_fieldref(file)?,
-        CONSTANT_TAG_METHODREF =>
-            read_constant_methodref(file)?,
-        CONSTANT_TAG_INTERFACE_METHODREF =>
-            read_constant_interface_methodref(file)?,
-        CONSTANT_TAG_NAME_AND_TYPE =>
-            read_constant_name_and_type(file)?,
-        CONSTANT_METHOD_HANDLE =>
-            read_method_handle(file)?,
-        CONSTANT_METHOD_TYPE =>
-            read_method_type(file)?,
-        CONSTANT_DYNAMIC =>
-            read_dynamic(file)?,
-        CONSTANT_INVOKE_DYNAMIC =>
-            read_invoke_dynamic(file)?,
-        CONSTANT_MODULE =>
-            read_module(file)?,
-        CONSTANT_PACKAGE =>
-            read_package(file)?,
-        _ => panic!("Encountered unknown type of constant pool entry with a tag of: {}", tag),
+        CONSTANT_TAG_UTF8 => read_constant_utf8(file)?,
+        CONSTANT_TAG_CLASS => read_constant_class(file)?,
+        CONSTANT_TAG_STRING => read_constant_string(file)?,
+        CONSTANT_TAG_INTEGER => read_constant_integer(file)?,
+        CONSTANT_TAG_FLOAT => read_constant_float(file)?,
+        CONSTANT_TAG_LONG => read_constant_long(file)?,
+        CONSTANT_TAG_DOUBLE => read_constant_double(file)?,
+        CONSTANT_TAG_FIELDREF => read_constant_fieldref(file)?,
+        CONSTANT_TAG_METHODREF => read_constant_methodref(file)?,
+        CONSTANT_TAG_INTERFACE_METHODREF => read_constant_interface_methodref(file)?,
+        CONSTANT_TAG_NAME_AND_TYPE => read_constant_name_and_type(file)?,
+        CONSTANT_METHOD_HANDLE => read_method_handle(file)?,
+        CONSTANT_METHOD_TYPE => read_method_type(file)?,
+        CONSTANT_DYNAMIC => read_dynamic(file)?,
+        CONSTANT_INVOKE_DYNAMIC => read_invoke_dynamic(file)?,
+        CONSTANT_MODULE => read_module(file)?,
+        CONSTANT_PACKAGE => read_package(file)?,
+        _ => panic!(
+            "Encountered unknown type of constant pool entry with a tag of: {}",
+            tag
+        ),
     };
 
     Ok(entry)
@@ -202,12 +187,9 @@ fn read_constant_utf8<R: Read>(file: &mut R) -> io::Result<ConstantPoolEntry> {
 
     let bytes = read_n_bytes(file, length as usize)?;
 
-    let string = str::from_utf8(&bytes).unwrap()
-        .to_string();
+    let string = str::from_utf8(&bytes).unwrap().to_string();
 
-    Ok(ConstantPoolEntry::ConstantUtf8 {
-        string,
-    })
+    Ok(ConstantPoolEntry::ConstantUtf8 { string })
 }
 
 fn read_constant_integer<R: Read>(file: &mut R) -> io::Result<ConstantPoolEntry> {
@@ -215,7 +197,7 @@ fn read_constant_integer<R: Read>(file: &mut R) -> io::Result<ConstantPoolEntry>
     file.read_exact(&mut buffer)?;
 
     Ok(ConstantPoolEntry::ConstantInteger {
-        val: i32::from_be_bytes(buffer)
+        val: i32::from_be_bytes(buffer),
     })
 }
 
@@ -224,7 +206,7 @@ fn read_constant_float<R: Read>(file: &mut R) -> io::Result<ConstantPoolEntry> {
     file.read_exact(&mut buffer)?;
 
     Ok(ConstantPoolEntry::ConstantFloat {
-        val: FloatBuffer { buf: buffer }
+        val: FloatBuffer { buf: buffer },
     })
 }
 
@@ -233,7 +215,7 @@ fn read_constant_long<R: Read>(file: &mut R) -> io::Result<ConstantPoolEntry> {
     file.read_exact(&mut buffer)?;
 
     Ok(ConstantPoolEntry::ConstantLong {
-        val: i64::from_be_bytes(buffer)
+        val: i64::from_be_bytes(buffer),
     })
 }
 
@@ -242,24 +224,20 @@ fn read_constant_double<R: Read>(file: &mut R) -> io::Result<ConstantPoolEntry> 
     file.read_exact(&mut buffer)?;
 
     Ok(ConstantPoolEntry::ConstantDouble {
-        val: FloatBuffer { buf: buffer }
+        val: FloatBuffer { buf: buffer },
     })
 }
 
 fn read_constant_class<R: Read>(file: &mut R) -> io::Result<ConstantPoolEntry> {
     let name_index = read_cp_index(file)?;
 
-    Ok(ConstantPoolEntry::ConstantClass {
-        name_index,
-    })
+    Ok(ConstantPoolEntry::ConstantClass { name_index })
 }
 
 fn read_constant_string<R: Read>(file: &mut R) -> io::Result<ConstantPoolEntry> {
     let string_index = read_cp_index(file)?;
 
-    Ok(ConstantPoolEntry::ConstantString {
-        string_index,
-    })
+    Ok(ConstantPoolEntry::ConstantString { string_index })
 }
 
 fn read_constant_fieldref<R: Read>(file: &mut R) -> io::Result<ConstantPoolEntry> {
@@ -337,9 +315,7 @@ fn read_field<R: Read>(file: &mut R) -> io::Result<Field> {
 
     let attributes = read_attributes(file)?;
 
-    let access_flags = promote_result_to_io(
-        FieldAccess::from_access_flags(access_flags)
-    )?;
+    let access_flags = promote_result_to_io(FieldAccess::from_access_flags(access_flags))?;
 
     Ok(Field {
         access_flags,

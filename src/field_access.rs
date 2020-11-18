@@ -7,12 +7,12 @@ use util::flag_is_set;
 // https://docs.oracle.com/javase/specs/jvms/se11/html/jvms-4.html#jvms-4.5-200-A.1
 const PUBLIC_FLAG: u16 = 0x0001;
 const PRIVATE_FLAG: u16 = 0x0002;
-const PROTECTED_FLAG : u16 = 0x0004;
+const PROTECTED_FLAG: u16 = 0x0004;
 const STATIC_FLAG: u16 = 0x0008;
-const FINAL_FLAG : u16 = 0x0010;
+const FINAL_FLAG: u16 = 0x0010;
 const VOLATILE_FLAG: u16 = 0x0040;
-const TRANSIENT_FLAG : u16 = 0x0080;
-const SYNTHETIC_FLAG : u16 = 0x1000;
+const TRANSIENT_FLAG: u16 = 0x0080;
+const SYNTHETIC_FLAG: u16 = 0x1000;
 const ENUM_FLAG: u16 = 0x4000;
 
 /// A flag that denotes an acess level or property of a field.
@@ -21,13 +21,7 @@ const ENUM_FLAG: u16 = 0x4000;
 /// details.
 ///
 /// https://docs.oracle.com/javase/specs/jvms/se11/html/jvms-4.html#jvms-4.5-200-A
-#[derive(Clone)]
-#[derive(Debug)]
-#[derive(Eq)]
-#[derive(Hash)]
-#[derive(Ord)]
-#[derive(PartialEq)]
-#[derive(PartialOrd)]
+#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub enum FieldAccess {
     Public,
     Private,
@@ -80,15 +74,33 @@ impl FieldAccess {
 
         // TODO: Add validation for inconsistent access flags
 
-        if is_public { access.insert(Public); }
-        if is_private { access.insert(Private); }
-        if is_protected { access.insert(Protected); }
-        if is_static { access.insert(Static); }
-        if is_final { access.insert(Final); }
-        if is_volatile { access.insert(Volatile); }
-        if is_transient { access.insert(Transient); }
-        if is_synthetic { access.insert(Synthetic); }
-        if is_enum { access.insert(Enum); }
+        if is_public {
+            access.insert(Public);
+        }
+        if is_private {
+            access.insert(Private);
+        }
+        if is_protected {
+            access.insert(Protected);
+        }
+        if is_static {
+            access.insert(Static);
+        }
+        if is_final {
+            access.insert(Final);
+        }
+        if is_volatile {
+            access.insert(Volatile);
+        }
+        if is_transient {
+            access.insert(Transient);
+        }
+        if is_synthetic {
+            access.insert(Synthetic);
+        }
+        if is_enum {
+            access.insert(Enum);
+        }
 
         Ok(access)
     }

@@ -29,8 +29,7 @@ const CHECKCAST: u8 = 192;
 ///
 /// https://docs.oracle.com/javase/specs/jvms/se11/html/jvms-6.html
 #[allow(non_camel_case_types)]
-#[derive(Debug)]
-#[derive(PartialEq)]
+#[derive(Debug, PartialEq)]
 pub enum Bytecode {
     Aconst_null,
     Iconst_0,
@@ -92,158 +91,136 @@ impl Bytecode {
                     bytecode.push((i, Aconst_null));
 
                     i += 1;
-                },
+                }
                 ICONST_0 => {
                     bytecode.push((i, Iconst_0));
 
                     i += 1;
-                },
+                }
                 ICONST_1 => {
                     bytecode.push((i, Iconst_1));
 
                     i += 1;
-                },
+                }
                 LDC => {
                     let constant_index = bytes[i + 1];
 
                     bytecode.push((i, Ldc(constant_index)));
 
                     i += 2;
-                },
+                }
                 ILOAD_1 => {
                     bytecode.push((i, Iload_1));
 
                     i += 1;
-                },
+                }
                 ALOAD_0 => {
                     bytecode.push((i, Aload_0));
 
                     i += 1;
-                },
+                }
                 ASTORE_1 => {
                     bytecode.push((i, Astore_1));
 
                     i += 1;
-                },
+                }
                 DUP => {
                     bytecode.push((i, Dup));
 
                     i += 1;
-                },
+                }
                 IFEQ => {
-                    let jump_offset = u16::from_be_bytes(
-                        [bytes[i + 1], bytes[i + 2]]
-                    );
+                    let jump_offset = u16::from_be_bytes([bytes[i + 1], bytes[i + 2]]);
 
                     bytecode.push((i, Ifeq(jump_offset)));
 
                     i += 3;
-                },
+                }
                 IFNE => {
-                    let jump_offset = u16::from_be_bytes(
-                        [bytes[i + 1], bytes[i + 2]]
-                    );
+                    let jump_offset = u16::from_be_bytes([bytes[i + 1], bytes[i + 2]]);
 
                     bytecode.push((i, Ifne(jump_offset)));
 
                     i += 3;
-                },
+                }
                 GOTO => {
-                    let jump_offset = u16::from_be_bytes(
-                        [bytes[i + 1], bytes[i + 2]]
-                    );
+                    let jump_offset = u16::from_be_bytes([bytes[i + 1], bytes[i + 2]]);
 
                     bytecode.push((i, Goto(jump_offset)));
 
                     i += 3;
-                },
+                }
                 IRETURN => {
                     bytecode.push((i, Ireturn));
 
                     i += 1;
-                },
+                }
                 RETURN => {
                     bytecode.push((i, Return));
 
                     i += 1;
-                },
+                }
                 GETSTATIC => {
-                    let field = u16::from_be_bytes(
-                        [bytes[i + 1], bytes[i + 2]]
-                    );
+                    let field = u16::from_be_bytes([bytes[i + 1], bytes[i + 2]]);
 
                     bytecode.push((i, Getstatic(field)));
 
                     i += 3;
-                },
+                }
                 PUTSTATIC => {
-                    let field = u16::from_be_bytes(
-                        [bytes[i + 1], bytes[i + 2]]
-                    );
+                    let field = u16::from_be_bytes([bytes[i + 1], bytes[i + 2]]);
 
                     bytecode.push((i, Putstatic(field)));
 
                     i += 3;
-                },
+                }
                 GETFIELD => {
-                    let field = u16::from_be_bytes(
-                        [bytes[i + 1], bytes[i + 2]]
-                    );
+                    let field = u16::from_be_bytes([bytes[i + 1], bytes[i + 2]]);
 
                     bytecode.push((i, Getfield(field)));
 
                     i += 3;
-                },
+                }
                 PUTFIELD => {
-                    let field = u16::from_be_bytes(
-                        [bytes[i + 1], bytes[i + 2]]
-                    );
+                    let field = u16::from_be_bytes([bytes[i + 1], bytes[i + 2]]);
 
                     bytecode.push((i, Putfield(field)));
 
                     i += 3;
-                },
+                }
                 INVOKEVIRTUAL => {
-                    let method = u16::from_be_bytes(
-                        [bytes[i + 1], bytes[i + 2]]
-                    );
+                    let method = u16::from_be_bytes([bytes[i + 1], bytes[i + 2]]);
 
                     bytecode.push((i, Invokevirtual(method)));
 
                     i += 3;
-                },
+                }
                 INVOKESPECIAL => {
-                    let method = u16::from_be_bytes(
-                        [bytes[i + 1], bytes[i + 2]]
-                    );
+                    let method = u16::from_be_bytes([bytes[i + 1], bytes[i + 2]]);
 
                     bytecode.push((i, Invokespecial(method)));
 
                     i += 3;
-                },
+                }
                 NEW => {
-                    let class = u16::from_be_bytes(
-                        [bytes[i + 1], bytes[i + 2]]
-                    );
+                    let class = u16::from_be_bytes([bytes[i + 1], bytes[i + 2]]);
 
                     bytecode.push((i, New(class)));
 
                     i += 3;
-                },
+                }
                 ATHROW => {
                     bytecode.push((i, Athrow));
 
                     i += 1;
-                },
+                }
                 CHECKCAST => {
-                    let class = u16::from_be_bytes(
-                        [bytes[i + 1], bytes[i + 2]]
-                    );
+                    let class = u16::from_be_bytes([bytes[i + 1], bytes[i + 2]]);
 
                     bytecode.push((i, Checkcast(class)));
 
                     i += 3;
-                },
+                }
                 _ => panic!("Unknown bytecode: {}", instruction),
             }
         }

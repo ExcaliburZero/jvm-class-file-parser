@@ -3,9 +3,7 @@ extern crate jvm_class_file_parser;
 use std::fs::File;
 use std::io::{BufReader, BufWriter};
 
-use jvm_class_file_parser::{
-    ClassFile
-};
+use jvm_class_file_parser::ClassFile;
 
 /// Round-trip test of a class file where we read the file, then serialize it
 /// and parse it again asserting that the contents are the same

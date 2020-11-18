@@ -3,7 +3,9 @@ extern crate jvm_class_file_parser;
 use std::collections::HashSet;
 use std::fs::File;
 
-use jvm_class_file_parser::{Attribute, Bytecode, ClassAccess, ClassFile, Code, Field, FieldAccess, ConstantPoolEntry};
+use jvm_class_file_parser::{
+    Attribute, Bytecode, ClassAccess, ClassFile, Code, ConstantPoolEntry, Field, FieldAccess,
+};
 use std::ops::Deref;
 
 #[test]
@@ -31,18 +33,12 @@ fn parse_class_dummy() {
         Some(Code {
             max_stack: 1,
             max_locals: 1,
-            code: vec![
-                (0, Aload_0),
-                (1, Invokespecial(1)),
-                (4, Return),
-            ],
+            code: vec![(0, Aload_0), (1, Invokespecial(1)), (4, Return),],
             exception_table: vec![],
-            attributes: vec![
-                Attribute {
-                    attribute_name_index: 7,
-                    info: vec![0, 1, 0, 0, 0, 1],
-                }
-            ],
+            attributes: vec![Attribute {
+                attribute_name_index: 7,
+                info: vec![0, 1, 0, 0, 0, 1],
+            }],
         }),
         code.unwrap()
     );
@@ -97,12 +93,10 @@ fn parse_class_intbox() {
                 (9, Return),
             ],
             exception_table: vec![],
-            attributes: vec![
-                Attribute {
-                    attribute_name_index: 10,
-                    info: vec![0, 3, 0, 0, 0, 4, 0, 4, 0, 5, 0, 9, 0, 6],
-                }
-            ],
+            attributes: vec![Attribute {
+                attribute_name_index: 10,
+                info: vec![0, 3, 0, 0, 0, 4, 0, 4, 0, 5, 0, 9, 0, 6],
+            }],
         }),
         constructor_code.unwrap()
     );
@@ -114,20 +108,14 @@ fn parse_class_intbox() {
         Some(Code {
             max_stack: 1,
             max_locals: 1,
-            code: vec![
-                (0, Aload_0),
-                (1, Getfield(2)),
-                (4, Ireturn),
-            ],
+            code: vec![(0, Aload_0), (1, Getfield(2)), (4, Ireturn),],
             exception_table: vec![],
-            attributes: vec![
-                Attribute {
-                    attribute_name_index: 10,
-                    info: vec![0, 1, 0, 0, 0, 9],
-                }
-            ],
+            attributes: vec![Attribute {
+                attribute_name_index: 10,
+                info: vec![0, 1, 0, 0, 0, 9],
+            }],
         }),
-       get_value_code.unwrap()
+        get_value_code.unwrap()
     );
 }
 
@@ -139,47 +127,29 @@ fn parse_class_constant_values() {
     assert_eq!(40, class_file.constant_pool.len());
 
     match class_file.get_constant(2).deref() {
-        ConstantPoolEntry::ConstantInteger { val } => {
-            assert_eq!(65535, *val)
-        },
-        _ => {
-            panic!("Expected an integer")
-        }
+        ConstantPoolEntry::ConstantInteger { val } => assert_eq!(65535, *val),
+        _ => panic!("Expected an integer"),
     }
 
     match class_file.get_constant(4).deref() {
-        ConstantPoolEntry::ConstantFloat { ref val } => {
-            assert_eq!(42.0 as f32, val.into())
-        },
-        _ => {
-            panic!("Expected a float")
-        }
+        ConstantPoolEntry::ConstantFloat { ref val } => assert_eq!(42.0 as f32, val.into()),
+        _ => panic!("Expected a float"),
     }
 
     match class_file.get_constant(6).deref() {
-        ConstantPoolEntry::ConstantLong { val } => {
-            assert_eq!(42, *val)
-        },
-        _ => {
-            panic!("Expected a long")
-        }
+        ConstantPoolEntry::ConstantLong { val } => assert_eq!(42, *val),
+        _ => panic!("Expected a long"),
     }
 
     match class_file.get_constant(9).deref() {
-        ConstantPoolEntry::ConstantDouble { ref val } => {
-            assert_eq!(-1 as f64, val.into())
-        },
-        _ => {
-            panic!("Expected a double")
-        }
+        ConstantPoolEntry::ConstantDouble { ref val } => assert_eq!(-1 as f64, val.into()),
+        _ => panic!("Expected a double"),
     }
 
     match class_file.get_constant(37).deref() {
         ConstantPoolEntry::ConstantUtf8 { ref string } => {
             assert_eq!("fourty two".to_string(), *string)
-        },
-        _ => {
-            panic!("Expected a utf8 string")
         }
+        _ => panic!("Expected a utf8 string"),
     }
 }

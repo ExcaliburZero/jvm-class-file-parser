@@ -5,10 +5,7 @@ pub type ConstantPoolIndex = usize;
 
 /// Constant pool structures,
 /// as defined in https://docs.oracle.com/javase/specs/jvms/se11/html/jvms-4.html#jvms-4.4
-#[derive(Debug)]
-#[derive(Eq)]
-#[derive(PartialEq)]
-#[derive(Clone)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub enum ConstantPoolEntry {
     ConstantUtf8 {
         string: String,
@@ -69,5 +66,5 @@ pub enum ConstantPoolEntry {
         name_index: u16,
     },
     // represents an empty slot in the constant pool table
-    ConstantEmptySlot { },
+    ConstantEmptySlot {},
 }
