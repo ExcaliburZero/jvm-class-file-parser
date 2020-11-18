@@ -8,10 +8,7 @@ use std::io;
 use std::ops::Deref;
 use std::path::PathBuf;
 
-use jvm_class_file_parser::{
-    Bytecode, ClassAccess, ClassFile, ConstantPoolEntry, ExceptionTableEntry,
-    Method
-};
+use jvm_class_file_parser::{Attribute, Bytecode, ClassAccess, ClassFile, ConstantPoolEntry, ExceptionTableEntry, Method};
 
 const CONSTRUCTOR_NAME: &str = "<init>";
 
@@ -44,6 +41,8 @@ fn javap(filepath: &str, print_code: bool) {
     print_access_flags(&class_file.access_flags);
 
     print_constant_pool(&class_file);
+
+    print_attributes(&class_file);
 
     println!("{{");
 
@@ -78,6 +77,46 @@ fn print_access_flags(access_flags: &HashSet<ClassAccess>) {
         .join(", ");
 
     println!("  flags: {}", flags_str);
+}
+
+fn print_attributes(class_file: &ClassFile) {
+    println!("Attributes:");
+
+    class_file.attributes.iter().for_each(|attr| {
+        println!("  {}", format_attribute(class_file, attr));
+    });
+}
+
+fn format_attribute(class_file: &ClassFile, attr: &Attribute) -> String {
+    let attr_type = class_file.get_constant_utf8(attr.attribute_name_index);
+    // https://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.7
+    match attr_type {
+        // "ConstantValue" => {},
+        // "Code" => {},
+        // "StackMapTable" => {},
+        // "Exceptions" => {},
+        // "InnerClasses" => {},
+        // "EnclosingMethod" => {},
+        // "Synthetic" => {},
+        // "Signature" => {},
+        "SourceFile" | "Signature" => {
+            // clean this up with u16::from() on a vec slice
+            let index = ((attr.info[0] as usize) << 8) + attr.info[1] as usize;
+            format!("{} = {:?}", attr_type, class_file.get_constant_utf8(index))
+        },
+        // "SourceDebugExtension" => {},
+        // "LineNumberTable" => {},
+        // "LocalVariableTable" => {},
+        // "LocalVariableTypeTable" => {},
+        // "Deprecated" => {},
+        // "RuntimeVisibleAnnotations" => {},
+        // "RuntimeInvisibleAnnotations" => {},
+        // "RuntimeVisibleParameterAnnotations" => {},
+        // "RuntimeInvisibleParameterAnnotations" => {},
+        // "AnnotationDefault" => {},
+        // "BootstrapMethods" => {},
+        _ => attr_type.to_string(),
+    }
 }
 
 fn access_flag_to_name(flag: &ClassAccess) -> &'static str {

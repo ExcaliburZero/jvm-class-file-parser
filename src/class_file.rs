@@ -17,7 +17,6 @@ use writing;
 /// corresponding section of the Java Virtual Machine Specification.
 ///
 /// https://docs.oracle.com/javase/specs/jvms/se11/html/jvms-4.html
-#[allow(clippy::vec_box)]
 #[derive(Debug)]
 #[derive(Eq)]
 #[derive(PartialEq)]
@@ -224,7 +223,6 @@ impl ClassFile {
     ///     *class_file.get_constant(2).deref()
     /// );
     /// ```
-    #[allow(clippy::borrowed_box)]
     pub fn get_constant(&self, index: usize) -> &ConstantPoolEntry {
         &self.constant_pool[index - 1]
     }
