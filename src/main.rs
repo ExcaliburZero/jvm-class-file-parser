@@ -8,9 +8,7 @@ use std::io;
 use std::ops::Deref;
 use std::path::PathBuf;
 
-use jvm_class_file_parser::{
-    Attribute, Bytecode, ClassAccess, ClassFile, ConstantPoolEntry, ExceptionTableEntry, Method,
-};
+use jvm_class_file_parser::{Attribute, AttributeSet, Bytecode, ClassAccess, ClassFile, ConstantPoolEntry, ExceptionTableEntry, Method};
 
 const CONSTRUCTOR_NAME: &str = "<init>";
 
@@ -86,12 +84,12 @@ fn print_access_flags(access_flags: &HashSet<ClassAccess>) -> String {
 
 fn print_attributes(
     class_file: &ClassFile,
-    attributes: &Vec<Attribute>,
+    attributes: &AttributeSet,
     prefix: &'static str,
 ) -> String {
     let mut output = format!("{}Attributes:\n", prefix);
 
-    attributes.iter().for_each(|attr| {
+    attributes.attributes.iter().for_each(|attr| {
         output.push_str(format!("{}  {}\n", prefix, format_attribute(class_file, attr)).as_ref());
     });
 
@@ -311,7 +309,7 @@ fn print_method(class_file: &ClassFile, method: &Method, print_code: bool) -> St
         )
         .as_ref();
 
-    if let Some(sig) = method.get_signature(class_file) {
+    if let Some(sig) = method.attributes.get_signature(class_file) {
         output = output + format!("{}signature: {}\n", PREFIX, sig).as_ref();
     }
 

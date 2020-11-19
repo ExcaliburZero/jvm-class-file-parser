@@ -30,7 +30,7 @@ pub fn write_class_file<W: Write>(file: &mut W, class_file: &ClassFile) -> io::R
     write_u16(file, 0)?; // interfaces
     write_u16(file, 0)?; // fields
     write_methods(file, &class_file.methods)?;
-    write_attributes(file, &class_file.attributes)?;
+    write_attributes(file, &class_file.attributes.attributes)?;
 
     Ok(())
 }
@@ -155,7 +155,7 @@ fn write_method<W: Write>(file: &mut W, method: &Method) -> io::Result<()> {
     write_cp_index(file, method.name_index)?;
     write_cp_index(file, method.descriptor_index)?;
 
-    write_attributes(file, &method.attributes)?;
+    write_attributes(file, &method.attributes.attributes)?;
 
     Ok(())
 }

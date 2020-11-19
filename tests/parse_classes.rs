@@ -4,7 +4,8 @@ use std::collections::HashSet;
 use std::fs::File;
 
 use jvm_class_file_parser::{
-    Attribute, Bytecode, ClassAccess, ClassFile, Code, ConstantPoolEntry, Field, FieldAccess,
+    Attribute, AttributeSet, Bytecode, ClassAccess, ClassFile, Code, ConstantPoolEntry, Field,
+    FieldAccess,
 };
 use std::ops::Deref;
 
@@ -35,10 +36,12 @@ fn parse_class_dummy() {
             max_locals: 1,
             code: vec![(0, Aload_0), (1, Invokespecial(1)), (4, Return),],
             exception_table: vec![],
-            attributes: vec![Attribute {
-                attribute_name_index: 7,
-                info: vec![0, 1, 0, 0, 0, 1],
-            }],
+            attributes: AttributeSet {
+                attributes: vec![Attribute {
+                    attribute_name_index: 7,
+                    info: vec![0, 1, 0, 0, 0, 1],
+                }]
+            },
         }),
         code.unwrap()
     );
@@ -69,7 +72,7 @@ fn parse_class_intbox() {
             access_flags: field_access_flags,
             name_index: 5,
             descriptor_index: 6,
-            attributes: vec![],
+            attributes: AttributeSet { attributes: vec![] },
         },
         *field
     );
@@ -93,10 +96,12 @@ fn parse_class_intbox() {
                 (9, Return),
             ],
             exception_table: vec![],
-            attributes: vec![Attribute {
-                attribute_name_index: 10,
-                info: vec![0, 3, 0, 0, 0, 4, 0, 4, 0, 5, 0, 9, 0, 6],
-            }],
+            attributes: AttributeSet {
+                attributes: vec![Attribute {
+                    attribute_name_index: 10,
+                    info: vec![0, 3, 0, 0, 0, 4, 0, 4, 0, 5, 0, 9, 0, 6],
+                }]
+            },
         }),
         constructor_code.unwrap()
     );
@@ -110,10 +115,12 @@ fn parse_class_intbox() {
             max_locals: 1,
             code: vec![(0, Aload_0), (1, Getfield(2)), (4, Ireturn),],
             exception_table: vec![],
-            attributes: vec![Attribute {
-                attribute_name_index: 10,
-                info: vec![0, 1, 0, 0, 0, 9],
-            }],
+            attributes: AttributeSet {
+                attributes: vec![Attribute {
+                    attribute_name_index: 10,
+                    info: vec![0, 1, 0, 0, 0, 9],
+                }]
+            },
         }),
         get_value_code.unwrap()
     );

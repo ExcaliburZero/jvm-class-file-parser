@@ -1,6 +1,8 @@
-use std::io;
+use std::{convert::TryInto, io};
 
 use bytecode::*;
+
+use crate::ClassFile;
 use {parsing, ConstantPoolIndex};
 
 const EXCEPTION_ENTRY_LENGTH: usize = 8;
@@ -11,13 +13,46 @@ pub struct Attribute {
     pub info: Vec<u8>,
 }
 
+#[derive(Debug, Eq, PartialEq, Clone)]
+pub struct AttributeSet {
+    pub attributes: Vec<Attribute>,
+}
+
+impl AttributeSet {
+    /// Find an attribute with the specified name
+    pub fn find_attribute<T: AsRef<str>>(
+        &self,
+        class_file: &ClassFile,
+        attribute_name: T,
+    ) -> Option<&Attribute> {
+        // we can index this more efficiently
+        self.attributes.iter().find(|attr| {
+            class_file.get_constant_utf8(attr.attribute_name_index) == attribute_name.as_ref()
+        })
+    }
+
+    pub fn get_signature(&self, class_file: &ClassFile) -> Option<String> {
+        self.find_attribute(class_file, "Signature").map(|attr| {
+            // why is this such a PITA
+            let boxed_slice = attr.info.clone().into_boxed_slice();
+            let boxed_array: Box<[u8; 2]> = match boxed_slice.try_into() {
+                Ok(ba) => ba,
+                Err(o) => panic!("Expected a Vec of length {} but it was {}", 2, o.len()),
+            };
+            let index = u16::from_be_bytes(*boxed_array);
+
+            class_file.get_constant_utf8(index as usize).to_string()
+        })
+    }
+}
+
 #[derive(Debug, PartialEq)]
 pub struct Code {
     pub max_stack: u16,
     pub max_locals: u16,
     pub code: Vec<(usize, Bytecode)>,
     pub exception_table: Vec<ExceptionTableEntry>,
-    pub attributes: Vec<Attribute>,
+    pub attributes: AttributeSet,
 }
 
 impl Code {

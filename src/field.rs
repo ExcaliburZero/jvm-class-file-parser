@@ -9,5 +9,5 @@ pub struct Field {
     pub access_flags: HashSet<FieldAccess>,
     pub name_index: ConstantPoolIndex,
     pub descriptor_index: ConstantPoolIndex,
-    pub attributes: Vec<Attribute>,
+    pub attributes: AttributeSet,
 }

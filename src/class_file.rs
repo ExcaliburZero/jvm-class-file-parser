@@ -28,7 +28,7 @@ pub struct ClassFile {
     pub interfaces: Vec<ConstantPoolIndex>,
     pub fields: Vec<Field>,
     pub methods: Vec<Method>,
-    pub attributes: Vec<Attribute>,
+    pub attributes: AttributeSet,
 }
 
 impl ClassFile {
@@ -100,7 +100,7 @@ impl ClassFile {
     pub fn get_source_file_name(&self) -> Option<&str> {
         use ConstantPoolEntry::*;
 
-        for attr in self.attributes.iter() {
+        for attr in self.attributes.attributes.iter() {
             let name_constant = self.get_constant(attr.attribute_name_index as usize);
 
             if let ConstantUtf8 { ref string } = *name_constant.deref() {

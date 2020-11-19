@@ -354,7 +354,7 @@ fn read_method<R: Read>(file: &mut R) -> io::Result<Method> {
     })
 }
 
-pub fn read_attributes<R: Read>(file: &mut R) -> io::Result<Vec<Attribute>> {
+pub fn read_attributes<R: Read>(file: &mut R) -> io::Result<AttributeSet> {
     let attributes_count = read_u16(file)?;
 
     let mut attributes = Vec::<Attribute>::new();
@@ -365,7 +365,9 @@ pub fn read_attributes<R: Read>(file: &mut R) -> io::Result<Vec<Attribute>> {
         attributes.push(entry);
     }
 
-    Ok(attributes)
+    Ok(AttributeSet {
+        attributes
+    })
 }
 
 fn read_attribute<R: Read>(file: &mut R) -> io::Result<Attribute> {

@@ -1,4 +1,4 @@
-use std::{convert::TryInto, io};
+use std::io;
 
 use attribute::*;
 use class_file::ClassFile;
@@ -25,43 +25,14 @@ pub struct Method {
     pub access_flags: u16,
     pub name_index: ConstantPoolIndex,
     pub descriptor_index: ConstantPoolIndex,
-    pub attributes: Vec<Attribute>,
+    pub attributes: AttributeSet,
 }
 
 impl Method {
-    /// Find an attribute with the specified name
-    fn find_attribute<T: AsRef<str>>(
-        &self,
-        class_file: &ClassFile,
-        attribute_name: T,
-    ) -> Option<&Attribute> {
-        // we can index this more efficiently
-        self.attributes.iter().find(|attr| {
-            class_file.get_constant_utf8(attr.attribute_name_index) == attribute_name.as_ref()
-        })
-    }
-
     pub fn get_code(&self, class_file: &ClassFile) -> io::Result<Option<Code>> {
-        for attr in self.attributes.iter() {
-            if class_file.get_constant_utf8(attr.attribute_name_index) == "Code" {
-                return Ok(Some(Code::from_bytes(&attr.info)?));
-            }
+        match self.attributes.find_attribute(class_file, "Code") {
+            Some(attr) => Ok(Some(Code::from_bytes(&attr.info)?)),
+            _ => Ok(None),
         }
-
-        Ok(None)
-    }
-
-    pub fn get_signature(&self, class_file: &ClassFile) -> Option<String> {
-        self.find_attribute(class_file, "Signature").map(|attr| {
-            // why is this such a PITA
-            let boxed_slice = attr.info.clone().into_boxed_slice();
-            let boxed_array: Box<[u8; 2]> = match boxed_slice.try_into() {
-                Ok(ba) => ba,
-                Err(o) => panic!("Expected a Vec of length {} but it was {}", 2, o.len()),
-            };
-            let index = u16::from_be_bytes(*boxed_array);
-
-            class_file.get_constant_utf8(index as usize).to_string()
-        })
     }
 }
