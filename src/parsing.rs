@@ -187,9 +187,34 @@ fn read_constant_utf8<R: Read>(file: &mut R) -> io::Result<ConstantPoolEntry> {
 
     let bytes = read_n_bytes(file, length as usize)?;
 
-    let string = str::from_utf8(&bytes).unwrap().to_string();
+    // try str::from_utf8 which handles the happy path efficiently and then fall back to handling NULLs as needed
+    // https://docs.oracle.com/javase/specs/jvms/se8/html/jvms-4.html#jvms-4.4.7
+    match str::from_utf8(&bytes) {
+        Ok(parsed) => Ok(ConstantPoolEntry::ConstantUtf8 {
+            string: parsed.to_string(),
+        }),
+        _ => {
+            let mut new_bytes = Vec::with_capacity(bytes.len());
 
-    Ok(ConstantPoolEntry::ConstantUtf8 { string })
+            // go through the bytes and when we find an encoded null (2 bytes), replace it with the single byte null
+            let mut iter = bytes.iter().peekable();
+            while let Some(&b) = iter.next() {
+                if b == 0xc0 && iter.peek() == Some(&&(0x80 as u8)) {
+                    new_bytes.push(0);
+                    iter.next();
+                } else {
+                    new_bytes.push(b);
+                }
+            }
+
+            // try parsing again and return the Err if it fails
+            str::from_utf8(&new_bytes)
+                .map(|string| ConstantPoolEntry::ConstantUtf8 {
+                    string: string.to_string(),
+                })
+                .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))
+        }
+    }
 }
 
 fn read_constant_integer<R: Read>(file: &mut R) -> io::Result<ConstantPoolEntry> {
@@ -365,9 +390,7 @@ pub fn read_attributes<R: Read>(file: &mut R) -> io::Result<AttributeSet> {
         attributes.push(entry);
     }
 
-    Ok(AttributeSet {
-        attributes
-    })
+    Ok(AttributeSet { attributes })
 }
 
 fn read_attribute<R: Read>(file: &mut R) -> io::Result<Attribute> {
@@ -428,4 +451,32 @@ fn read_package<R: Read>(file: &mut R) -> io::Result<ConstantPoolEntry> {
     let name_index = read_u16(file)?;
 
     Ok(ConstantPoolEntry::ConstantPackage { name_index })
+}
+
+#[cfg(test)]
+mod tests {
+    use std::io::{self, Cursor};
+
+    use super::read_constant_utf8;
+
+    #[test]
+    fn read_utf8_with_embedded_null() -> io::Result<()> {
+        let bytes = vec![
+            0, 9, // length
+            0xd0, 0xaa, // cyrillic letter Ъ
+            0xc0, 0x80, // 2-byte encoded null
+            0xd0, 0xab, // cyrillic letter Ы
+            0xc0, 0x80, // 2-byte encoded null
+            0x42,
+        ];
+        let mut cursor = Cursor::new(bytes);
+        let parsed = read_constant_utf8(&mut cursor)?;
+        assert_eq!(
+            parsed,
+            crate::ConstantPoolEntry::ConstantUtf8 {
+                string: "Ъ\0Ы\0B".to_string()
+            }
+        );
+        Ok(())
+    }
 }
