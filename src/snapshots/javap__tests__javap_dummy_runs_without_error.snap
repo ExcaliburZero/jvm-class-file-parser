@@ -1,5 +1,34 @@
 ---
 source: src/main.rs
-expression: "javap(\"classes/Dummy.class\", true)"
+expression: "&javap_output[end_of_first_line + 1..]"
 ---
-"Classfile /home/jbalint/sw/rust-sw/jvm-class-file-parser/classes/Dummy.class\n  Compiled from: \"Dummy.java\"\nclass Dummy\n  minor version: 0\n  major version: 55\n  flags: ACC_PUBLIC, ACC_SUPER\nConstant pool:\n   #1 = Methodref           #3.#10          // java/lang/Object.\"<init>\":()V\n   #2 = Class               #11             // Dummy\n   #3 = Class               #12             // java/lang/Object\n   #4 = Utf8                <init>\n   #5 = Utf8                ()V\n   #6 = Utf8                Code\n   #7 = Utf8                LineNumberTable\n   #8 = Utf8                SourceFile\n   #9 = Utf8                Dummy.java\n  #10 = NameAndType         #4:#5           // \"<init>\":()V\n  #11 = Utf8                Dummy\n  #12 = Utf8                java/lang/Object\nAttributes:\n  SourceFile = \"Dummy.java\"\n{\n  Dummy();\n    descriptor: ()V\n    flags: TODO\n    Code:      stack=1, locals=1, args_size=TODO          0: aload_0                            \n          1: invokespecial #1                   \n          4: return                             \n}\nSourceFile: \"Dummy.java\"\n"
+  Compiled from: "Dummy.java"
+class Dummy
+  minor version: 0
+  major version: 55
+  flags: ACC_PUBLIC, ACC_SUPER
+Constant pool:
+   #1 = Methodref           #3.#10          // java/lang/Object."<init>":()V
+   #2 = Class               #11             // Dummy
+   #3 = Class               #12             // java/lang/Object
+   #4 = Utf8                <init>
+   #5 = Utf8                ()V
+   #6 = Utf8                Code
+   #7 = Utf8                LineNumberTable
+   #8 = Utf8                SourceFile
+   #9 = Utf8                Dummy.java
+  #10 = NameAndType         #4:#5           // "<init>":()V
+  #11 = Utf8                Dummy
+  #12 = Utf8                java/lang/Object
+Attributes:
+  SourceFile = "Dummy.java"
+{
+  Dummy();
+    descriptor: ()V
+    flags: TODO
+    Code:      stack=1, locals=1, args_size=TODO          0: aload_0                            
+          1: invokespecial #1                   
+          4: return                             
+}
+SourceFile: "Dummy.java"
+

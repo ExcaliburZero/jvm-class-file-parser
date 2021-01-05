@@ -8,7 +8,10 @@ use std::io;
 use std::ops::Deref;
 use std::path::PathBuf;
 
-use jvm_class_file_parser::{Attribute, AttributeSet, Bytecode, ClassAccess, ClassFile, ConstantPoolEntry, ExceptionTableEntry, Method};
+use jvm_class_file_parser::{
+    Attribute, AttributeSet, Bytecode, ClassAccess, ClassFile, ConstantPoolEntry,
+    ExceptionTableEntry, Method,
+};
 
 const CONSTRUCTOR_NAME: &str = "<init>";
 
@@ -25,6 +28,7 @@ fn javap(filepath: &str, print_code: bool) -> String {
     let mut file = File::open(filepath).unwrap();
     let class_file = ClassFile::from_file(&mut file).unwrap();
 
+    // as with Java's `javap`, we canonicalize the path
     let absolute_filepath = to_absolute_filepath(filepath).unwrap();
 
     let mut output = String::new();
@@ -384,7 +388,10 @@ mod tests {
 
     #[test]
     fn javap_dummy_runs_without_error() {
-        insta::assert_debug_snapshot!(javap("classes/Dummy.class", true));
+        let javap_output = javap("classes/Dummy.class", true);
+        // remove the first line which contains an absolute path
+        let end_of_first_line = javap_output.find("\n").unwrap_or(0);
+        insta::assert_display_snapshot!(&javap_output[end_of_first_line + 1..]);
     }
 
     #[test]
