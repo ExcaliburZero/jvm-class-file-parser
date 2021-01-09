@@ -9,8 +9,8 @@ use constant_pool::*;
 use field::*;
 use field_access::*;
 use method::*;
-use util::{Contextable, promote_result_to_io, FloatBuffer};
 use std::ops::Deref;
+use util::{promote_result_to_io, Contextable, FloatBuffer};
 
 const EXPECTED_MAGIC: u32 = 0xCAFE_BABE;
 
@@ -23,7 +23,14 @@ const CONSTANT_TAG_CLASS: u8 = 7;
 const CONSTANT_TAG_STRING: u8 = 8;
 const CONSTANT_TAG_FIELDREF: u8 = 9;
 const CONSTANT_TAG_METHODREF: u8 = 10;
+const CONSTANT_TAG_INTERFACE_METHODREF: u8 = 11;
 const CONSTANT_TAG_NAME_AND_TYPE: u8 = 12;
+const CONSTANT_METHOD_HANDLE: u8 = 15;
+const CONSTANT_METHOD_TYPE: u8 = 16;
+const CONSTANT_DYNAMIC: u8 = 17;
+const CONSTANT_INVOKE_DYNAMIC: u8 = 18;
+const CONSTANT_MODULE: u8 = 19;
+const CONSTANT_PACKAGE: u8 = 20;
 
 const READ_MINOR_VERSION: &str = "Failed to read minor version.";
 const READ_MAJOR_VERSION: &str = "Failed to read major version.";
@@ -42,7 +49,7 @@ pub fn read_class_file<R: Read>(file: &mut R) -> io::Result<ClassFile> {
     if magic != EXPECTED_MAGIC {
         let error_msg = format!("The given file does not appear to be a valid JVM class file. JVM class files must start with the magic bytes \"CAFEBABE\", but this file started with \"{:x}\"", magic);
 
-        return Err(Error::new(ErrorKind::Other, error_msg))
+        return Err(Error::new(ErrorKind::Other, error_msg));
     }
 
     let minor_version = read_u16(file).context(READ_MINOR_VERSION)?;
@@ -50,18 +57,16 @@ pub fn read_class_file<R: Read>(file: &mut R) -> io::Result<ClassFile> {
 
     let constant_pool = read_constant_pool(file).context(READ_CONSTANT_POOL)?;
 
-    let access_flags  = read_u16(file).context(READ_ACCESS_FLAGS)?;
-    let this_class    = read_u16(file).context(READ_THIS_CLASS)?;
-    let super_class   = read_u16(file).context(READ_SUPER_CLASS)?;
+    let access_flags = read_u16(file).context(READ_ACCESS_FLAGS)?;
+    let this_class = read_cp_index(file).context(READ_THIS_CLASS)?;
+    let super_class = read_cp_index(file).context(READ_SUPER_CLASS)?;
 
-    let interfaces    = read_interfaces(file).context(READ_INTERFACES)?;
-    let fields        = read_fields(file).context(READ_FIELDS)?;
-    let methods       = read_methods(file).context(READ_METHODS)?;
-    let attributes    = read_attributes(file).context(READ_ATTRIBUTES)?;
+    let interfaces = read_interfaces(file).context(READ_INTERFACES)?;
+    let fields = read_fields(file).context(READ_FIELDS)?;
+    let methods = read_methods(file).context(READ_METHODS)?;
+    let attributes = read_attributes(file).context(READ_ATTRIBUTES)?;
 
-    let access_flags = promote_result_to_io(
-        ClassAccess::from_access_flags(access_flags)
-    )?;
+    let access_flags = promote_result_to_io(ClassAccess::from_access_flags(access_flags))?;
 
     Ok(ClassFile {
         minor_version,
@@ -114,10 +119,10 @@ fn read_n_bytes<R: Read>(file: &mut R, length: usize) -> io::Result<Vec<u8>> {
 }
 
 #[allow(clippy::vec_box)]
-fn read_constant_pool<R: Read>(file: &mut R) -> io::Result<Vec<Box<ConstantPoolEntry>>> {
+fn read_constant_pool<R: Read>(file: &mut R) -> io::Result<Vec<ConstantPoolEntry>> {
     let constant_pool_count = read_u16(file)? - 1;
 
-    let mut constant_pool = Vec::<Box<ConstantPoolEntry>>::with_capacity(constant_pool_count as usize);
+    let mut constant_pool = Vec::<ConstantPoolEntry>::with_capacity(constant_pool_count as usize);
 
     let mut idx = 0;
     while idx < constant_pool_count {
@@ -132,12 +137,13 @@ fn read_constant_pool<R: Read>(file: &mut R) -> io::Result<Vec<Box<ConstantPoolE
         // constant_pool index n+1 must be valid but is considered unusable.
         // (we could abstract this slightly by placing the structure constraint in the enum)
         match constant_pool.get(constant_pool.len() - 1).unwrap().deref() {
-            ConstantPoolEntry::ConstantLong { val: _ } | ConstantPoolEntry::ConstantDouble { val: _ } => {
+            ConstantPoolEntry::ConstantLong { val: _ }
+            | ConstantPoolEntry::ConstantDouble { val: _ } => {
                 // we need this ensure proper indexes of all other entries
-                constant_pool.push(Box::new(ConstantPoolEntry::ConstantEmptySlot {}));
+                constant_pool.push(ConstantPoolEntry::ConstantEmptySlot {});
                 idx = idx + 1
-            },
-            _ => {},
+            }
+            _ => {}
         }
 
         idx = idx + 1
@@ -146,31 +152,31 @@ fn read_constant_pool<R: Read>(file: &mut R) -> io::Result<Vec<Box<ConstantPoolE
     Ok(constant_pool)
 }
 
-fn read_constant_pool_entry<R: Read>(file: &mut R) -> io::Result<Box<ConstantPoolEntry>> {
+fn read_constant_pool_entry<R: Read>(file: &mut R) -> io::Result<ConstantPoolEntry> {
     let tag = read_u8(file)?;
 
-    let entry: Box<ConstantPoolEntry> = match tag {
-        CONSTANT_TAG_UTF8 =>
-            Box::new(read_constant_utf8(file)?),
-        CONSTANT_TAG_CLASS =>
-            Box::new(read_constant_class(file)?),
-        CONSTANT_TAG_STRING =>
-            Box::new(read_constant_string(file)?),
-        CONSTANT_TAG_INTEGER =>
-            Box::new(read_constant_integer(file)?),
-        CONSTANT_TAG_FLOAT =>
-            Box::new(read_constant_float(file)?),
-        CONSTANT_TAG_LONG =>
-            Box::new(read_constant_long(file)?),
-        CONSTANT_TAG_DOUBLE =>
-            Box::new(read_constant_double(file)?),
-        CONSTANT_TAG_FIELDREF =>
-            Box::new(read_constant_fieldref(file)?),
-        CONSTANT_TAG_METHODREF =>
-            Box::new(read_constant_methodref(file)?),
-        CONSTANT_TAG_NAME_AND_TYPE =>
-            Box::new(read_constant_name_and_type(file)?),
-        _ => panic!("Encountered unknown type of constant pool entry with a tag of: {}", tag),
+    let entry: ConstantPoolEntry = match tag {
+        CONSTANT_TAG_UTF8 => read_constant_utf8(file)?,
+        CONSTANT_TAG_CLASS => read_constant_class(file)?,
+        CONSTANT_TAG_STRING => read_constant_string(file)?,
+        CONSTANT_TAG_INTEGER => read_constant_integer(file)?,
+        CONSTANT_TAG_FLOAT => read_constant_float(file)?,
+        CONSTANT_TAG_LONG => read_constant_long(file)?,
+        CONSTANT_TAG_DOUBLE => read_constant_double(file)?,
+        CONSTANT_TAG_FIELDREF => read_constant_fieldref(file)?,
+        CONSTANT_TAG_METHODREF => read_constant_methodref(file)?,
+        CONSTANT_TAG_INTERFACE_METHODREF => read_constant_interface_methodref(file)?,
+        CONSTANT_TAG_NAME_AND_TYPE => read_constant_name_and_type(file)?,
+        CONSTANT_METHOD_HANDLE => read_method_handle(file)?,
+        CONSTANT_METHOD_TYPE => read_method_type(file)?,
+        CONSTANT_DYNAMIC => read_dynamic(file)?,
+        CONSTANT_INVOKE_DYNAMIC => read_invoke_dynamic(file)?,
+        CONSTANT_MODULE => read_module(file)?,
+        CONSTANT_PACKAGE => read_package(file)?,
+        _ => panic!(
+            "Encountered unknown type of constant pool entry with a tag of: {}",
+            tag
+        ),
     };
 
     Ok(entry)
@@ -181,12 +187,34 @@ fn read_constant_utf8<R: Read>(file: &mut R) -> io::Result<ConstantPoolEntry> {
 
     let bytes = read_n_bytes(file, length as usize)?;
 
-    let string = str::from_utf8(&bytes).unwrap()
-        .to_string();
+    // try str::from_utf8 which handles the happy path efficiently and then fall back to handling NULLs as needed
+    // https://docs.oracle.com/javase/specs/jvms/se8/html/jvms-4.html#jvms-4.4.7
+    match str::from_utf8(&bytes) {
+        Ok(parsed) => Ok(ConstantPoolEntry::ConstantUtf8 {
+            string: parsed.to_string(),
+        }),
+        _ => {
+            let mut new_bytes = Vec::with_capacity(bytes.len());
 
-    Ok(ConstantPoolEntry::ConstantUtf8 {
-        string,
-    })
+            // go through the bytes and when we find an encoded null (2 bytes), replace it with the single byte null
+            let mut iter = bytes.iter().peekable();
+            while let Some(&b) = iter.next() {
+                if b == 0xc0 && iter.peek() == Some(&&(0x80 as u8)) {
+                    new_bytes.push(0);
+                    iter.next();
+                } else {
+                    new_bytes.push(b);
+                }
+            }
+
+            // try parsing again and return the Err if it fails
+            str::from_utf8(&new_bytes)
+                .map(|string| ConstantPoolEntry::ConstantUtf8 {
+                    string: string.to_string(),
+                })
+                .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))
+        }
+    }
 }
 
 fn read_constant_integer<R: Read>(file: &mut R) -> io::Result<ConstantPoolEntry> {
@@ -194,7 +222,7 @@ fn read_constant_integer<R: Read>(file: &mut R) -> io::Result<ConstantPoolEntry>
     file.read_exact(&mut buffer)?;
 
     Ok(ConstantPoolEntry::ConstantInteger {
-        val: i32::from_be_bytes(buffer)
+        val: i32::from_be_bytes(buffer),
     })
 }
 
@@ -203,7 +231,7 @@ fn read_constant_float<R: Read>(file: &mut R) -> io::Result<ConstantPoolEntry> {
     file.read_exact(&mut buffer)?;
 
     Ok(ConstantPoolEntry::ConstantFloat {
-        val: FloatBuffer { buf: buffer }
+        val: FloatBuffer { buf: buffer },
     })
 }
 
@@ -212,7 +240,7 @@ fn read_constant_long<R: Read>(file: &mut R) -> io::Result<ConstantPoolEntry> {
     file.read_exact(&mut buffer)?;
 
     Ok(ConstantPoolEntry::ConstantLong {
-        val: i64::from_be_bytes(buffer)
+        val: i64::from_be_bytes(buffer),
     })
 }
 
@@ -221,24 +249,20 @@ fn read_constant_double<R: Read>(file: &mut R) -> io::Result<ConstantPoolEntry> 
     file.read_exact(&mut buffer)?;
 
     Ok(ConstantPoolEntry::ConstantDouble {
-        val: FloatBuffer { buf: buffer }
+        val: FloatBuffer { buf: buffer },
     })
 }
 
 fn read_constant_class<R: Read>(file: &mut R) -> io::Result<ConstantPoolEntry> {
     let name_index = read_cp_index(file)?;
 
-    Ok(ConstantPoolEntry::ConstantClass {
-        name_index,
-    })
+    Ok(ConstantPoolEntry::ConstantClass { name_index })
 }
 
 fn read_constant_string<R: Read>(file: &mut R) -> io::Result<ConstantPoolEntry> {
     let string_index = read_cp_index(file)?;
 
-    Ok(ConstantPoolEntry::ConstantString {
-        string_index,
-    })
+    Ok(ConstantPoolEntry::ConstantString { string_index })
 }
 
 fn read_constant_fieldref<R: Read>(file: &mut R) -> io::Result<ConstantPoolEntry> {
@@ -261,6 +285,16 @@ fn read_constant_methodref<R: Read>(file: &mut R) -> io::Result<ConstantPoolEntr
     })
 }
 
+fn read_constant_interface_methodref<R: Read>(file: &mut R) -> io::Result<ConstantPoolEntry> {
+    let class_index = read_u16(file)?;
+    let name_and_type_index = read_u16(file)?;
+
+    Ok(ConstantPoolEntry::ConstantInterfaceMethodref {
+        class_index,
+        name_and_type_index,
+    })
+}
+
 fn read_constant_name_and_type<R: Read>(file: &mut R) -> io::Result<ConstantPoolEntry> {
     let name_index = read_cp_index(file)?;
     let descriptor_index = read_cp_index(file)?;
@@ -271,13 +305,13 @@ fn read_constant_name_and_type<R: Read>(file: &mut R) -> io::Result<ConstantPool
     })
 }
 
-fn read_interfaces<R: Read>(file: &mut R) -> io::Result<Vec<u16>> {
+fn read_interfaces<R: Read>(file: &mut R) -> io::Result<Vec<ConstantPoolIndex>> {
     let interfaces_count = i32::from(read_u16(file)?);
 
-    let mut interfaces = Vec::<u16>::new();
+    let mut interfaces = Vec::<_>::new();
 
     for _ in 0..interfaces_count {
-        let entry = read_u16(file)?;
+        let entry = read_cp_index(file)?;
 
         interfaces.push(entry);
     }
@@ -306,9 +340,7 @@ fn read_field<R: Read>(file: &mut R) -> io::Result<Field> {
 
     let attributes = read_attributes(file)?;
 
-    let access_flags = promote_result_to_io(
-        FieldAccess::from_access_flags(access_flags)
-    )?;
+    let access_flags = promote_result_to_io(FieldAccess::from_access_flags(access_flags))?;
 
     Ok(Field {
         access_flags,
@@ -347,7 +379,7 @@ fn read_method<R: Read>(file: &mut R) -> io::Result<Method> {
     })
 }
 
-pub fn read_attributes<R: Read>(file: &mut R) -> io::Result<Vec<Attribute>> {
+pub fn read_attributes<R: Read>(file: &mut R) -> io::Result<AttributeSet> {
     let attributes_count = read_u16(file)?;
 
     let mut attributes = Vec::<Attribute>::new();
@@ -358,7 +390,7 @@ pub fn read_attributes<R: Read>(file: &mut R) -> io::Result<Vec<Attribute>> {
         attributes.push(entry);
     }
 
-    Ok(attributes)
+    Ok(AttributeSet { attributes })
 }
 
 fn read_attribute<R: Read>(file: &mut R) -> io::Result<Attribute> {
@@ -371,4 +403,80 @@ fn read_attribute<R: Read>(file: &mut R) -> io::Result<Attribute> {
         attribute_name_index,
         info,
     })
+}
+
+fn read_method_handle<R: Read>(file: &mut R) -> io::Result<ConstantPoolEntry> {
+    let reference_kind = read_u8(file)?;
+    let reference_index = read_u16(file)?;
+
+    Ok(ConstantPoolEntry::ConstantMethodHandle {
+        reference_kind,
+        reference_index,
+    })
+}
+
+fn read_method_type<R: Read>(file: &mut R) -> io::Result<ConstantPoolEntry> {
+    let descriptor_index = read_u16(file)?;
+
+    Ok(ConstantPoolEntry::ConstantMethodType { descriptor_index })
+}
+
+fn read_dynamic<R: Read>(file: &mut R) -> io::Result<ConstantPoolEntry> {
+    let bootstrap_method_attr_index = read_u16(file)?;
+    let name_and_type_index = read_u16(file)?;
+
+    Ok(ConstantPoolEntry::ConstantDynamic {
+        bootstrap_method_attr_index,
+        name_and_type_index,
+    })
+}
+
+fn read_invoke_dynamic<R: Read>(file: &mut R) -> io::Result<ConstantPoolEntry> {
+    let bootstrap_method_attr_index = read_u16(file)?;
+    let name_and_type_index = read_u16(file)?;
+
+    Ok(ConstantPoolEntry::ConstantInvokeDynamic {
+        bootstrap_method_attr_index,
+        name_and_type_index,
+    })
+}
+
+fn read_module<R: Read>(file: &mut R) -> io::Result<ConstantPoolEntry> {
+    let name_index = read_u16(file)?;
+
+    Ok(ConstantPoolEntry::ConstantModule { name_index })
+}
+
+fn read_package<R: Read>(file: &mut R) -> io::Result<ConstantPoolEntry> {
+    let name_index = read_u16(file)?;
+
+    Ok(ConstantPoolEntry::ConstantPackage { name_index })
+}
+
+#[cfg(test)]
+mod tests {
+    use std::io::{self, Cursor};
+
+    use super::read_constant_utf8;
+
+    #[test]
+    fn read_utf8_with_embedded_null() -> io::Result<()> {
+        let bytes = vec![
+            0, 9, // length
+            0xd0, 0xaa, // cyrillic letter Ъ
+            0xc0, 0x80, // 2-byte encoded null
+            0xd0, 0xab, // cyrillic letter Ы
+            0xc0, 0x80, // 2-byte encoded null
+            0x42,
+        ];
+        let mut cursor = Cursor::new(bytes);
+        let parsed = read_constant_utf8(&mut cursor)?;
+        assert_eq!(
+            parsed,
+            crate::ConstantPoolEntry::ConstantUtf8 {
+                string: "Ъ\0Ы\0B".to_string()
+            }
+        );
+        Ok(())
+    }
 }

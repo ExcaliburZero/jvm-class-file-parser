@@ -21,13 +21,7 @@ const MODULE_FLAG: u16 = 0x8000;
 /// details.
 ///
 /// https://docs.oracle.com/javase/specs/jvms/se11/html/jvms-4.html#jvms-4.1-200-E
-#[derive(Clone)]
-#[derive(Debug)]
-#[derive(Eq)]
-#[derive(Hash)]
-#[derive(Ord)]
-#[derive(PartialEq)]
-#[derive(PartialOrd)]
+#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub enum ClassAccess {
     Public,
     Final,
@@ -80,15 +74,33 @@ impl ClassAccess {
 
         // TODO: Add validation for inconsistent access flags
 
-        if is_public { access.insert(Public); }
-        if is_final { access.insert(Final); }
-        if is_super { access.insert(Super); }
-        if is_interface { access.insert(Interface); }
-        if is_abstract { access.insert(Abstract); }
-        if is_synthetic { access.insert(Synthetic); }
-        if is_annotation { access.insert(Annotation); }
-        if is_enum { access.insert(Enum); }
-        if is_module { access.insert(Module); }
+        if is_public {
+            access.insert(Public);
+        }
+        if is_final {
+            access.insert(Final);
+        }
+        if is_super {
+            access.insert(Super);
+        }
+        if is_interface {
+            access.insert(Interface);
+        }
+        if is_abstract {
+            access.insert(Abstract);
+        }
+        if is_synthetic {
+            access.insert(Synthetic);
+        }
+        if is_annotation {
+            access.insert(Annotation);
+        }
+        if is_enum {
+            access.insert(Enum);
+        }
+        if is_module {
+            access.insert(Module);
+        }
 
         Ok(access)
     }
@@ -99,15 +111,33 @@ impl ClassAccess {
 
         let mut flags = 0;
 
-        if access_flags.contains(&Public) { flags ^= PUBLIC_FLAG; }
-        if access_flags.contains(&Final) { flags ^= FINAL_FLAG; }
-        if access_flags.contains(&Super) { flags ^= SUPER_FLAG; }
-        if access_flags.contains(&Interface) { flags ^= INTERFACE_FLAG; }
-        if access_flags.contains(&Abstract) { flags ^= ABSTRACT_FLAG; }
-        if access_flags.contains(&Synthetic) { flags ^= SYNTHETIC_FLAG; }
-        if access_flags.contains(&Annotation) { flags ^= ANNOTATION_FLAG; }
-        if access_flags.contains(&Enum) { flags ^= ENUM_FLAG; }
-        if access_flags.contains(&Module) { flags ^= MODULE_FLAG; }
+        if access_flags.contains(&Public) {
+            flags ^= PUBLIC_FLAG;
+        }
+        if access_flags.contains(&Final) {
+            flags ^= FINAL_FLAG;
+        }
+        if access_flags.contains(&Super) {
+            flags ^= SUPER_FLAG;
+        }
+        if access_flags.contains(&Interface) {
+            flags ^= INTERFACE_FLAG;
+        }
+        if access_flags.contains(&Abstract) {
+            flags ^= ABSTRACT_FLAG;
+        }
+        if access_flags.contains(&Synthetic) {
+            flags ^= SYNTHETIC_FLAG;
+        }
+        if access_flags.contains(&Annotation) {
+            flags ^= ANNOTATION_FLAG;
+        }
+        if access_flags.contains(&Enum) {
+            flags ^= ENUM_FLAG;
+        }
+        if access_flags.contains(&Module) {
+            flags ^= MODULE_FLAG;
+        }
 
         flags
     }

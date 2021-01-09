@@ -4,3 +4,10 @@ version = "0.1.0"
 authors = ["Christopher Wells <cwellsny@nycap.rr.com>"]
 
 [dependencies]
+
+[dev-dependencies]
+insta = "1.3.0"
+
+[[bin]]
+name = "javap"
+path = "src/main.rs"

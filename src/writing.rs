@@ -1,5 +1,5 @@
 use std::io;
-use std::io::{Write, Error, ErrorKind};
+use std::io::{Error, ErrorKind, Write};
 
 use attribute::*;
 use class_access::*;
@@ -24,13 +24,13 @@ pub fn write_class_file<W: Write>(file: &mut W, class_file: &ClassFile) -> io::R
     write_constant_pool(file, &class_file.constant_pool)?;
 
     write_u16(file, ClassAccess::to_access_flags(&class_file.access_flags))?;
-    write_u16(file, class_file.this_class)?;
-    write_u16(file, class_file.super_class)?;
+    write_cp_index(file, class_file.this_class)?;
+    write_cp_index(file, class_file.super_class)?;
 
     write_u16(file, 0)?; // interfaces
     write_u16(file, 0)?; // fields
     write_methods(file, &class_file.methods)?;
-    write_attributes(file, &class_file.attributes)?;
+    write_attributes(file, &class_file.attributes.attributes)?;
 
     Ok(())
 }
@@ -45,8 +45,14 @@ fn write_u16<W: Write>(file: &mut W, value: u16) -> io::Result<()> {
 
 fn write_cp_index<W: Write>(file: &mut W, value: ConstantPoolIndex) -> io::Result<()> {
     match value {
-        0 => Err(Error::new(ErrorKind::InvalidInput, "Invalid constant pool index")),
-        x if x > usize::from(u16::MAX) => Err(Error::new(ErrorKind::InvalidInput, "Invalid constant pool index")),
+        0 => Err(Error::new(
+            ErrorKind::InvalidInput,
+            "Invalid constant pool index",
+        )),
+        x if x > usize::from(u16::MAX) => Err(Error::new(
+            ErrorKind::InvalidInput,
+            "Invalid constant pool index",
+        )),
         _ => file.write_all(&u16::to_be_bytes(value as u16)),
     }
 }
@@ -59,7 +65,10 @@ fn write_n_bytes<W: Write>(file: &mut W, bytes: &[u8]) -> io::Result<()> {
     file.write_all(bytes)
 }
 
-fn write_constant_pool<W: Write>(file: &mut W, constant_pool: &[Box<ConstantPoolEntry>]) -> io::Result<()> {
+fn write_constant_pool<W: Write>(
+    file: &mut W,
+    constant_pool: &[ConstantPoolEntry],
+) -> io::Result<()> {
     write_u16(file, (constant_pool.len() + 1) as u16)?;
 
     for entry in constant_pool {
@@ -70,16 +79,20 @@ fn write_constant_pool<W: Write>(file: &mut W, constant_pool: &[Box<ConstantPool
 }
 
 #[allow(clippy::borrowed_box)]
-fn write_constant_pool_entry<W: Write>(file: &mut W, entry: &Box<ConstantPoolEntry>) -> io::Result<()> {
+fn write_constant_pool_entry<W: Write>(file: &mut W, entry: &ConstantPoolEntry) -> io::Result<()> {
     use ConstantPoolEntry::*;
 
-    match **entry {
+    match *entry {
         ConstantUtf8 { ref string } => write_constant_utf8(file, &string)?,
         ConstantClass { name_index } => write_constant_class(file, name_index)?,
-        ConstantMethodref { class_index, name_and_type_index } =>
-            write_constant_methodref(file, class_index, name_and_type_index)?,
-        ConstantNameAndType { name_index, descriptor_index } =>
-            write_constant_name_and_type(file, name_index, descriptor_index)?,
+        ConstantMethodref {
+            class_index,
+            name_and_type_index,
+        } => write_constant_methodref(file, class_index, name_and_type_index)?,
+        ConstantNameAndType {
+            name_index,
+            descriptor_index,
+        } => write_constant_name_and_type(file, name_index, descriptor_index)?,
         _ => panic!(),
     }
 
@@ -103,9 +116,11 @@ fn write_constant_class<W: Write>(file: &mut W, name_index: ConstantPoolIndex) -
     Ok(())
 }
 
-fn write_constant_methodref<W: Write>(file: &mut W,
-                                      class_index: ConstantPoolIndex,
-                                      name_and_type_index: ConstantPoolIndex) -> io::Result<()> {
+fn write_constant_methodref<W: Write>(
+    file: &mut W,
+    class_index: ConstantPoolIndex,
+    name_and_type_index: ConstantPoolIndex,
+) -> io::Result<()> {
     write_u8(file, CONSTANT_TAG_METHODREF)?;
     write_cp_index(file, class_index)?;
     write_cp_index(file, name_and_type_index)?;
@@ -113,9 +128,11 @@ fn write_constant_methodref<W: Write>(file: &mut W,
     Ok(())
 }
 
-fn write_constant_name_and_type<W: Write>(file: &mut W,
-                                          name_index: ConstantPoolIndex,
-                                          descriptor_index: ConstantPoolIndex) -> io::Result<()> {
+fn write_constant_name_and_type<W: Write>(
+    file: &mut W,
+    name_index: ConstantPoolIndex,
+    descriptor_index: ConstantPoolIndex,
+) -> io::Result<()> {
     write_u8(file, CONSTANT_TAG_NAME_AND_TYPE)?;
     write_cp_index(file, name_index)?;
     write_cp_index(file, descriptor_index)?;
@@ -138,7 +155,7 @@ fn write_method<W: Write>(file: &mut W, method: &Method) -> io::Result<()> {
     write_cp_index(file, method.name_index)?;
     write_cp_index(file, method.descriptor_index)?;
 
-    write_attributes(file, &method.attributes)?;
+    write_attributes(file, &method.attributes.attributes)?;
 
     Ok(())
 }
@@ -161,7 +178,6 @@ fn write_attribute<W: Write>(file: &mut W, attributes: &Attribute) -> io::Result
     Ok(())
 }
 
-
 #[cfg(test)]
 mod tests {
     use crate::ConstantPoolIndex;
@@ -169,9 +185,18 @@ mod tests {
     #[test]
     fn test_write_cp_index_bounds() {
         let mut buf = Vec::with_capacity(4);
-        assert!(super::write_cp_index(&mut buf, 0).is_err(), "Expected error");
+        assert!(
+            super::write_cp_index(&mut buf, 0).is_err(),
+            "Expected error"
+        );
         assert!(super::write_cp_index(&mut buf, 1).is_ok(), "Expected Ok");
-        assert!(super::write_cp_index(&mut buf, u16::MAX as ConstantPoolIndex).is_ok(), "Expected Ok");
-        assert!(super::write_cp_index(&mut buf, u16::MAX as ConstantPoolIndex + 1).is_err(), "Expected error");
+        assert!(
+            super::write_cp_index(&mut buf, u16::MAX as ConstantPoolIndex).is_ok(),
+            "Expected Ok"
+        );
+        assert!(
+            super::write_cp_index(&mut buf, u16::MAX as ConstantPoolIndex + 1).is_err(),
+            "Expected error"
+        );
     }
 }

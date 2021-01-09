@@ -34,9 +34,7 @@ impl<A> Contextable for Result<A, io::Error> {
 
 /// Wrapper around a buffer representing a float or double. We can't use `f32`
 /// directly because it doesn't implement `Eq` which we depend on in containing structs.
-#[derive(Debug)]
-#[derive(PartialEq)]
-#[derive(Eq)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub struct FloatBuffer<B: Eq> {
     pub buf: B,
 }
